@@ -671,6 +671,12 @@
               <span>Jugador Profesional (tabla de puntos PRO)</span>
             </label>
           </div>
+          <div class="input-group" style="margin-bottom:14px;">
+            <label class="input-label" for="input-skin">🎮 Skin de Fortnite (opcional)</label>
+            <input type="text" class="form-input" id="input-skin" placeholder="Ej: Aura, Midas, Batman..."
+                   onkeydown="if(event.key==='Enter')addPlayer()" />
+            <small style="color:var(--muted);font-size:11px;">Escribe el nombre exacto de la skin para ver la foto en la tabla pública.</small>
+          </div>
           <button class="btn btn-primary btn-block" onclick="addPlayer()">Agregar Jugador</button>
         </div>
       </div>
@@ -1055,9 +1061,10 @@ function renderPlayerList() {
     item.innerHTML = `
       <div>
         <div class="player-item-name">${esc(p.display_name || p.username)} ${badge}</div>
-        <div class="player-item-tag">${esc(p.username)}</div>
+        <div class="player-item-tag">${esc(p.username)} ${p.skin_name ? `<span style="color:var(--green);font-size:11px;">· 🎮 ${esc(p.skin_name)}</span>` : ''}</div>
       </div>
       <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="editSkin(${p.id}, '${esc(p.skin_name || '')}')">🎮</button>
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="togglePlayerPro(${p.id})">Pro</button>
         <button class="btn btn-danger" style="padding:5px 10px;font-size:11px;" onclick="removePlayer(${p.id})">×</button>
       </div>
@@ -1067,25 +1074,44 @@ function renderPlayerList() {
 }
 
 async function addPlayer() {
-  const username = document.getElementById('input-username').value.trim();
-  const display  = document.getElementById('input-display').value.trim();
-  const is_pro   = document.getElementById('input-is-pro').checked;
+  const username  = document.getElementById('input-username').value.trim();
+  const display   = document.getElementById('input-display').value.trim();
+  const is_pro    = document.getElementById('input-is-pro').checked;
+  const skin_name = document.getElementById('input-skin').value.trim();
   if (!username) { showToast('Ingresa un username', 'warning'); return; }
   try {
     const res = await fetch(`${API}/players`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username, display_name: display || null, is_pro })
+      body: JSON.stringify({ username, display_name: display || null, is_pro, skin_name: skin_name || null })
     });
     if (res.ok) {
       document.getElementById('input-username').value = '';
       document.getElementById('input-display').value = '';
       document.getElementById('input-is-pro').checked = false;
+      document.getElementById('input-skin').value = '';
       await fetchPlayers();
       showToast(`Jugador ${username} agregado`, 'success');
     } else if (res.status === 409) {
       showToast('Jugador ya registrado', 'warning');
     } else {
       showToast('Error al agregar jugador', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+}
+
+async function editSkin(playerId, currentSkin) {
+  const newSkin = prompt('Nombre de la Skin de Fortnite (deja vacío para eliminar):', currentSkin);
+  if (newSkin === null) return; // cancelled
+  try {
+    const res = await fetch(`${API}/players/${playerId}/skin`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ skin_name: newSkin.trim() || null })
+    });
+    if (res.ok) {
+      await fetchPlayers();
+      showToast('Skin actualizada ✓', 'success');
+    } else {
+      showToast('Error al actualizar skin', 'error');
     }
   } catch(e) { showToast('Error de conexión', 'error'); }
 }
