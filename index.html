@@ -3003,6 +3003,9 @@
     }
 
     /* ── Load all data ────────────────────────────────────────── */
+    let lastStandingsHash = '';
+    let lastMatchesHash = '';
+
     async function loadStandings() {
       const dot = document.getElementById('conn-dot');
       const txt = document.getElementById('conn-text');
@@ -3015,8 +3018,17 @@
         const standings = await sRes.json();
         const matches = await mRes.json();
 
-        renderGlobal(standings || []);
-        renderMatches(matches || []);
+        const sStr = JSON.stringify(standings);
+        const mStr = JSON.stringify(matches);
+
+        if (sStr !== lastStandingsHash) {
+          renderGlobal(standings || []);
+          lastStandingsHash = sStr;
+        }
+        if (mStr !== lastMatchesHash) {
+          renderMatches(matches || []);
+          lastMatchesHash = mStr;
+        }
 
         const now = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('standings-updated').textContent = `Actualizado ${now}`;
