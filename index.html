@@ -1,0 +1,2978 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torneo Fortnite · yocapi_pr</title>
+  <meta name="description"
+    content="Tabla de clasificación en vivo, recompensas y reglas del torneo de Fortnite organizado por yocapi_pr. Battle Royale Construcción · NA Central · Solitario." />
+  <meta name="theme-color" content="#080c14" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ═══ TOKENS ═══════════════════════════════════════════════════════════ */
+    :root {
+      --bg: #080c14;
+      --panel: #0e1420;
+      --panel2: #121a27;
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.04);
+      --text: #f0f6ff;
+      --muted: #7b90b2;
+      --blue: #25b7ff;
+      --pink: #ff3e8a;
+      --green: #31e47f;
+      --gold: #f9c74f;
+      --silver: #b8c1cc;
+      --bronze: #d99058;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      --glow-b: rgba(37, 183, 255, 0.18);
+      --glow-p: rgba(255, 62, 138, 0.15);
+      --topbar: 70px;
+      --radius: 12px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* background mesh */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 0% 0%, rgba(37, 183, 255, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 100% 100%, rgba(255, 62, 138, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(49, 228, 127, 0.03) 0%, transparent 70%);
+    }
+
+    /* grid lines */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ═══ LAYOUT ════════════════════════════════════════════════════════════ */
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ═══ TOPBAR ═══════════════════════════════════════════════════════════ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      height: var(--topbar);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 12, 20, 0.92);
+      backdrop-filter: blur(24px);
+      padding: 0 32px;
+      z-index: 100;
+    }
+
+    /* brand */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .brand-mark img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+    }
+
+    .brand-text {
+      line-height: 1.1;
+    }
+
+    .brand-name {
+      font-family: Rajdhani, sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--blue), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* nav */
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--muted);
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
+      user-select: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-item .nav-icon {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+    }
+
+    .nav-item .nav-icon img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border);
+    }
+
+    .nav-item.active {
+      color: var(--blue);
+      background: rgba(37, 183, 255, 0.08);
+      border-color: rgba(37, 183, 255, 0.25);
+    }
+
+    /* ═══ HAMBURGER ═════════════════════════════════════════════════════════ */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 34px;
+      height: 34px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      gap: 4px;
+      flex-shrink: 0;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .hamburger:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .hamburger span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: transform 0.25s, opacity 0.2s;
+    }
+
+    .hamburger.open span:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    .hamburger.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.open span:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    /* ═══ MOBILE NAV OVERLAY ════════════════════════════════════════════════ */
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 98;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .mobile-overlay.open {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ═══ MOBILE NAV PANEL ══════════════════════════════════════════════════ */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: var(--topbar);
+      left: 0;
+      right: 0;
+      z-index: 99;
+      background: rgba(8, 12, 20, 0.98);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px 16px;
+      flex-direction: column;
+      gap: 6px;
+      transform: translateY(-110%);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .mobile-nav.open {
+      transform: translateY(0);
+    }
+
+    .mobile-nav .nav-item {
+      padding: 12px 14px;
+      font-size: 15px;
+      border-radius: 10px;
+    }
+
+    .mobile-nav .nav-item .nav-icon,
+    .mobile-nav .nav-item .nav-icon img {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* topbar right */
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .social-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: rgba(255, 255, 255, 0.02);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .social-link img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .social-link:hover {
+      transform: translateY(-3px) scale(1.05);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .social-link:hover::before {
+      opacity: 1;
+    }
+
+    .social-link:hover img {
+      transform: scale(1.15) rotate(-4deg);
+    }
+
+    .social-link:active {
+      transform: translateY(0) scale(0.95);
+    }
+
+    .conn-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border2);
+    }
+
+    .conn-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.3s;
+    }
+
+    .conn-dot.live {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    .conn-dot.error {
+      background: #ff4d4d;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* ═══ MAIN ══════════════════════════════════════════════════════════════ */
+    main {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-width: 0;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    /* sections */
+    .page-section {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .page-section.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ═══ HERO ══════════════════════════════════════════════════════════════ */
+    .hero {
+      min-height: 280px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 32px 40px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(37, 183, 255, 0.08);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(8, 12, 20, 0.95) 0%, rgba(8, 12, 20, 0.5) 35%, rgba(8, 12, 20, 0.05) 65%),
+        url('./assets/img/capybara_banner.png') right center / 62% auto no-repeat;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 380px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(37, 183, 255, 0.1);
+      border: 1px solid rgba(37, 183, 255, 0.25);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      font-family: Rajdhani, sans-serif;
+      font-size: clamp(48px, 8vw, 90px);
+      line-height: 0.92;
+      letter-spacing: -1.5px;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, #f0f6ff 0%, var(--blue) 50%, var(--pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: #c8d8f0;
+      line-height: 1.7;
+      max-width: 560px;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(12, 17, 32, 0.8);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(6px);
+    }
+
+    .info-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .info-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ═══ CARDS GRID ════════════════════════════════════════════════════════ */
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .info-card {
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .info-card:hover {
+      border-color: rgba(37, 183, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .card-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card-value {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    /* ═══ SECTION WRAPPER ═══════════════════════════════════════════════════ */
+    .section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(14, 20, 32, 0.9);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .section-head {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-family: Rajdhani, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-body {
+      padding: 24px;
+    }
+
+    /* ═══ STANDINGS TABLE ═══════════════════════════════════════════════════ */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .table-wrap table {
+      margin-bottom: 0;
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 580px;
+    }
+
+    .tbl thead th {
+      padding: 18px 26px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      backdrop-filter: blur(8px);
+    }
+
+    .tbl thead th.r {
+      text-align: right;
+    }
+
+    .tbl thead th.c {
+      text-align: center;
+    }
+
+    .tbl tbody tr {
+      transition: background 0.15s;
+    }
+
+    .tbl tbody tr:not(:last-child) td {
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .tbl tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .tbl tbody tr:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tbl tbody tr.is-leader {
+      background: rgba(99, 102, 241, 0.06);
+    }
+
+    .tbl tbody tr.is-leader:hover {
+      background: rgba(99, 102, 241, 0.09);
+    }
+
+    .tbl td {
+      padding: 16px 26px;
+      font-weight: 600;
+      font-size: 22px;
+    }
+
+    .tbl td.r {
+      text-align: right;
+    }
+
+    .tbl td.c {
+      text-align: center;
+    }
+
+    .tbl td:first-child {
+      width: 64px;
+    }
+
+    .tbl td:nth-child(2) {
+      font-weight: 700;
+    }
+
+    .tbl td:nth-child(3) {
+      font-weight: 500;
+    }
+
+    .rk {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      font-family: Rajdhani, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      transition: transform 0.15s;
+    }
+
+    .rk.r1 {
+      background: linear-gradient(135deg, rgba(249, 199, 79, 0.15), rgba(249, 199, 79, 0.05));
+      color: var(--gold);
+      border: 1px solid rgba(249, 199, 79, 0.35);
+      box-shadow: 0 0 12px rgba(249, 199, 79, 0.08);
+    }
+
+    .rk.r2 {
+      background: linear-gradient(135deg, rgba(184, 193, 204, 0.12), rgba(184, 193, 204, 0.04));
+      color: var(--silver);
+      border: 1px solid rgba(184, 193, 204, 0.2);
+    }
+
+    .rk.r3 {
+      background: linear-gradient(135deg, rgba(217, 144, 88, 0.12), rgba(217, 144, 88, 0.04));
+      color: var(--bronze);
+      border: 1px solid rgba(217, 144, 88, 0.2);
+    }
+
+    .pts-g {
+      font-size: 28px;
+      font-family: Rajdhani, sans-serif;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .pts-g.r1 {
+      color: var(--gold);
+    }
+
+    .pts-g.r2 {
+      color: var(--silver);
+    }
+
+    .pts-g.r3 {
+      color: var(--bronze);
+    }
+
+    .pts-m {
+      color: var(--muted);
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .empty-msg {
+      padding: 50px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ═══ MATCH TABLES ══════════════════════════════════════════════════════ */
+    .matches-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .match-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(14, 20, 32, 0.9);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .match-card-head {
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .match-num {
+      font-family: Rajdhani, sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .match-badge-det {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(49, 228, 127, 0.1);
+      border: 1px solid rgba(49, 228, 127, 0.3);
+      color: var(--green);
+    }
+
+    .match-card .tbl {
+      min-width: 480px;
+    }
+
+    .match-card .tbl td {
+      padding: 14px 26px;
+      font-size: 18px;
+    }
+
+    .match-card .tbl thead th {
+      padding: 14px 26px;
+      font-size: 14px;
+    }
+
+    .match-card .tbl td:first-child {
+      width: auto;
+    }
+
+    .match-card .tbl td:nth-child(2) {
+      font-weight: 600;
+    }
+
+    .match-card .tbl td:nth-child(3) {
+      font-weight: 500;
+    }
+
+    /* ═══ PODIUM TOP 3 ════════════════════════════════════════════════════════ */
+    @keyframes podium-float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-7px);
+      }
+    }
+
+    @keyframes podium-glow-gold {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(249, 199, 79, 0.08);
+        border-color: rgba(249, 199, 79, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 40px rgba(249, 199, 79, 0.18);
+        border-color: rgba(249, 199, 79, 0.55);
+      }
+    }
+
+    @keyframes podium-glow-silver {
+
+      0%,
+      100% {
+        box-shadow: 0 0 15px rgba(184, 193, 204, 0.05);
+        border-color: rgba(184, 193, 204, 0.2);
+      }
+
+      50% {
+        box-shadow: 0 0 30px rgba(184, 193, 204, 0.12);
+        border-color: rgba(184, 193, 204, 0.4);
+      }
+    }
+
+    @keyframes podium-glow-bronze {
+
+      0%,
+      100% {
+        box-shadow: 0 0 15px rgba(217, 144, 88, 0.05);
+        border-color: rgba(217, 144, 88, 0.2);
+      }
+
+      50% {
+        box-shadow: 0 0 30px rgba(217, 144, 88, 0.12);
+        border-color: rgba(217, 144, 88, 0.4);
+      }
+    }
+
+    @keyframes podium-zoom {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.04);
+      }
+    }
+
+    .podium {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding: 28px 24px 32px;
+    }
+
+    .podium-card {
+      flex: 1;
+      max-width: 260px;
+      border-radius: 14px;
+      padding: 20px 18px;
+      text-align: center;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      animation: podium-float 4s ease-in-out infinite;
+    }
+
+    .podium-card:nth-child(1) {
+      animation-delay: -1.3s;
+    }
+
+    .podium-card:nth-child(2) {
+      animation-delay: -2.6s;
+    }
+
+    .podium-card:nth-child(3) {
+      animation-delay: 0s;
+    }
+
+    .podium-card:hover {
+      animation: none;
+      transform: translateY(-8px) scale(1.03);
+    }
+
+    .podium-card.gold {
+      background: linear-gradient(180deg, rgba(249, 199, 79, 0.12) 0%, rgba(249, 199, 79, 0.03) 100%);
+      border-color: rgba(249, 199, 79, 0.3);
+      box-shadow: 0 0 20px rgba(249, 199, 79, 0.08);
+      animation: podium-float 4s ease-in-out infinite, podium-glow-gold 3s ease-in-out infinite;
+    }
+
+    .podium-card.gold:hover {
+      animation: none;
+      box-shadow: 0 8px 40px rgba(249, 199, 79, 0.2);
+    }
+
+    .podium-card.silver {
+      background: linear-gradient(180deg, rgba(184, 193, 204, 0.08) 0%, rgba(184, 193, 204, 0.02) 100%);
+      border-color: rgba(184, 193, 204, 0.2);
+      animation: podium-float 4s ease-in-out infinite, podium-glow-silver 3.5s ease-in-out infinite;
+    }
+
+    .podium-card.silver:hover {
+      animation: none;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .podium-card.bronze {
+      background: linear-gradient(180deg, rgba(217, 144, 88, 0.08) 0%, rgba(217, 144, 88, 0.02) 100%);
+      border-color: rgba(217, 144, 88, 0.2);
+      animation: podium-float 4s ease-in-out infinite, podium-glow-bronze 3.5s ease-in-out infinite;
+    }
+
+    .podium-card.bronze:hover {
+      animation: none;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .podium-rank {
+      font-family: Rajdhani, sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      animation: podium-zoom 3s ease-in-out infinite;
+    }
+
+    .podium-card:hover .podium-rank {
+      animation: none;
+    }
+
+    .podium-card.gold .podium-rank {
+      color: var(--gold);
+    }
+
+    .podium-card.silver .podium-rank {
+      color: var(--silver);
+    }
+
+    .podium-card.bronze .podium-rank {
+      color: var(--bronze);
+    }
+
+    .podium-card.gold .podium-rank {
+      animation-delay: 0s;
+    }
+
+    .podium-card.silver .podium-rank {
+      animation-delay: -1s;
+    }
+
+    .podium-card.bronze .podium-rank {
+      animation-delay: -2s;
+    }
+
+    .podium-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2px 0;
+    }
+
+    .podium-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .podium-stat {
+      text-align: center;
+    }
+
+    .podium-stat-val {
+      font-family: Rajdhani, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .podium-stat-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .podium-card.gold .podium-stat-val {
+      color: var(--gold);
+    }
+
+    .podium-card.silver .podium-stat-val {
+      color: var(--silver);
+    }
+
+    .podium-card.bronze .podium-stat-val {
+      color: var(--bronze);
+    }
+
+    .empty-msg .big {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .last-updated {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ═══ REWARDS ═══════════════════════════════════════════════════════════ */
+    .rewards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes glow-pulse {
+
+      0%,
+      100% {
+        opacity: 0.5;
+        filter: brightness(0.9);
+      }
+
+      50% {
+        opacity: 1;
+        filter: brightness(1.1);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%) skewX(-15deg);
+      }
+
+      100% {
+        transform: translateX(250%) skewX(-15deg);
+      }
+    }
+
+    @keyframes border-glow {
+
+      0%,
+      100% {
+        border-color: rgba(249, 199, 79, 0.3);
+        box-shadow: 0 0 15px rgba(249, 199, 79, 0.03);
+      }
+
+      50% {
+        border-color: rgba(249, 199, 79, 0.6);
+        box-shadow: 0 0 30px rgba(249, 199, 79, 0.1);
+      }
+    }
+
+    @keyframes icon-bounce {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      25% {
+        transform: translateY(-3px) rotate(-2deg);
+      }
+
+      75% {
+        transform: translateY(-3px) rotate(2deg);
+      }
+    }
+
+    @keyframes sparkle {
+
+      0%,
+      100% {
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1) rotate(180deg);
+      }
+    }
+
+    .reward-card {
+      padding: 28px 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .reward-card:nth-child(2) {
+      animation-delay: -1.3s;
+    }
+
+    .reward-card:nth-child(3) {
+      animation-delay: -2.6s;
+    }
+
+    .reward-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    .reward-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 80%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+      transform: translateX(-100%) skewX(-15deg);
+      animation: shimmer 5s ease-in-out infinite;
+    }
+
+    .reward-card.gold {
+      border-color: rgba(249, 199, 79, 0.3);
+      box-shadow: 0 0 15px rgba(249, 199, 79, 0.03);
+      animation: float 4s ease-in-out infinite, border-glow 3s ease-in-out infinite;
+    }
+
+    .reward-card.gold::before {
+      background: linear-gradient(135deg, rgba(249, 199, 79, 0.1) 0%, transparent 60%);
+    }
+
+    .reward-card.silver {
+      border-color: rgba(184, 193, 204, 0.35);
+    }
+
+    .reward-card.silver::before {
+      background: linear-gradient(135deg, rgba(184, 193, 204, 0.06) 0%, transparent 60%);
+    }
+
+    .reward-card.bronze {
+      border-color: rgba(217, 144, 88, 0.35);
+    }
+
+    .reward-card.bronze::before {
+      background: linear-gradient(135deg, rgba(217, 144, 88, 0.06) 0%, transparent 60%);
+    }
+
+    .reward-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+      animation: none;
+    }
+
+    .reward-card.gold:hover {
+      border-color: rgba(249, 199, 79, 0.7);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 50px rgba(249, 199, 79, 0.15);
+    }
+
+    .reward-card.silver:hover {
+      border-color: rgba(184, 193, 204, 0.55);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .reward-card.bronze:hover {
+      border-color: rgba(217, 144, 88, 0.55);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .reward-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      animation: glow-pulse 3s ease-in-out infinite, icon-bounce 5s ease-in-out infinite;
+    }
+
+    .reward-icon.duo {
+      gap: 20px;
+    }
+
+    .reward-icon.duo img {
+      width: 150px;
+      height: 150px;
+    }
+
+    .reward-card:hover .reward-icon {
+      animation: none;
+    }
+
+    .reward-card.gold .reward-icon {
+      animation-delay: 0s, 0s;
+    }
+
+    .reward-card.silver .reward-icon {
+      animation-delay: -1s, -1.6s;
+    }
+
+    .reward-card.bronze .reward-icon {
+      animation-delay: -2s, -3.2s;
+    }
+
+    .reward-icon img {
+      object-fit: contain;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-radius: 16px;
+    }
+
+    .reward-icon:not(.duo) img {
+      width: 210px;
+      height: 210px;
+    }
+
+    .reward-card:hover .reward-icon img {
+      transform: scale(1.12) rotate(-5deg);
+    }
+
+    .reward-card:hover .reward-icon.duo img:first-child {
+      transform: scale(1.12) rotate(-7deg) translateX(-6px);
+    }
+
+    .reward-card:hover .reward-icon.duo img:last-child {
+      transform: scale(1.12) rotate(7deg) translateX(6px);
+    }
+
+    .reward-ref {
+      font-size: 10px;
+      color: var(--muted);
+      opacity: 0.6;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    .reward-pos {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .reward-card.gold .reward-pos {
+      color: var(--gold);
+    }
+
+    .reward-card.silver .reward-pos {
+      color: var(--silver);
+    }
+
+    .reward-card.bronze .reward-pos {
+      color: var(--bronze);
+    }
+
+    .reward-name {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .reward-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ═══ RULES ════════════════════════════════════════════════════════════ */
+    .rules-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel2);
+    }
+
+    .rule-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(37, 183, 255, 0.12);
+      color: #25b7ff;
+    }
+
+    .rule-text {
+      font-size: 14px;
+      color: #c8d8f0;
+      line-height: 1.6;
+    }
+
+    .rule-text strong {
+      color: var(--text);
+    }
+
+    /* ═══ CHALLENGES ════════════════════════════════════════════════════════ */
+    .challenge-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel2);
+    }
+
+    .challenge-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(255, 62, 138, 0.12);
+      color: var(--pink);
+    }
+
+    .challenge-text {
+      font-size: 14px;
+      color: #c8d8f0;
+      line-height: 1.6;
+    }
+
+    .challenge-text strong {
+      color: var(--text);
+    }
+
+    .challenge-text em {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 12px;
+    }
+
+    /* ═══ SCORING TABLE ════════════════════════════════════════════════════ */
+    .scoring-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .scoring-col-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scoring-col-title .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .scoring-col-title .dot.green {
+      background: #25b981;
+    }
+
+    .scoring-col-title .dot.blue {
+      background: #6366f1;
+    }
+
+    .scoring-tbl {
+      min-width: 0;
+      font-size: 14px;
+    }
+
+    .scoring-tbl td {
+      padding: 10px 16px;
+    }
+
+    .scoring-tbl td.c {
+      text-align: center;
+    }
+
+    .scoring-tbl td.pink {
+      color: var(--pink);
+      font-weight: 700;
+    }
+
+    .scoring-tbl thead th {
+      padding: 10px 16px;
+      font-size: 11px;
+    }
+
+    .scoring-tbl thead th.c {
+      text-align: center;
+    }
+
+    .scoring-kill-row {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #c8d8f0;
+    }
+
+    .scoring-kill-row strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 700px) {
+      .scoring-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+
+    /* ═══ PAGE HEADER ═══════════════════════════════════════════════════════ */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .page-header-left h2 {
+      font-family: Rajdhani, sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .page-header-left p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ═══ RESPONSIVE ════════════════════════════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .podium {
+        gap: 12px;
+      }
+
+      .podium-card {
+        max-width: 220px;
+        padding: 16px 14px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .brand-text {
+        display: none;
+      }
+
+      .nav {
+        gap: 2px;
+      }
+
+      .nav-item {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 6px;
+      }
+
+      .nav-item .nav-icon,
+      .nav-item .nav-icon img {
+        width: 20px;
+        height: 20px;
+      }
+
+      .topbar-right {
+        gap: 10px;
+      }
+
+      .social-link {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+      }
+
+      .social-link img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .hero-info {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .cards-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      .rewards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-bg {
+        background: linear-gradient(135deg, rgba(8, 12, 20, 0.95) 0%, rgba(8, 12, 20, 0.7) 50%, rgba(8, 12, 20, 0.3) 100%),
+          url('./assets/img/capybara_banner.png') right center / 75% auto no-repeat;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .topbar .nav {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .mobile-nav {
+        display: flex;
+      }
+
+      .topbar {
+        height: var(--topbar);
+        flex-wrap: nowrap;
+        padding: 0 12px;
+        gap: 0;
+        justify-content: flex-start;
+      }
+
+      .topbar-right {
+        margin-left: auto;
+      }
+
+      .brand {
+        flex-shrink: 0;
+        gap: 8px;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+      }
+
+      .brand-mark img {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+      }
+
+      .brand-name {
+        font-size: 15px;
+      }
+
+      .brand-sub {
+        font-size: 9px;
+      }
+
+      .brand-text {
+        display: block;
+      }
+
+      .topbar-right {
+        flex-shrink: 0;
+        gap: 2px;
+      }
+
+      .conn-status {
+        display: none;
+      }
+
+      .social-link {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+      }
+
+      .social-link img {
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 0 10px;
+      }
+
+      .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+      }
+
+      .brand-mark img {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+      }
+
+      .social-link {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+      }
+
+      .social-link img {
+        width: 18px;
+        height: 18px;
+      }
+
+      .hamburger {
+        width: 32px;
+        height: 32px;
+      }
+
+      .hamburger span {
+        width: 16px;
+        height: 2px;
+      }
+
+      .hamburger.open span:nth-child(1) {
+        transform: translateY(5px) rotate(45deg);
+      }
+
+      .hamburger.open span:nth-child(3) {
+        transform: translateY(-5px) rotate(-45deg);
+      }
+
+      .hero {
+        padding: 20px;
+      }
+
+      .hero-title {
+        font-size: clamp(32px, 10vw, 48px);
+      }
+
+      .hero-desc {
+        font-size: 13px;
+      }
+
+      .podium {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 20px 16px 24px;
+      }
+
+      .podium-card {
+        max-width: none;
+        flex: none;
+        padding: 14px 16px;
+      }
+
+      .podium-rank {
+        font-size: 22px;
+      }
+
+      .podium-name {
+        font-size: 17px;
+      }
+
+      .podium-stat-val {
+        font-size: 18px;
+      }
+
+      .section-head {
+        padding: 12px 14px;
+      }
+
+      .section-title {
+        font-size: 16px;
+      }
+
+      .section-body {
+        padding: 14px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tbl {
+        min-width: 500px;
+      }
+
+      .tbl thead th {
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+
+      .tbl td {
+        padding: 10px 12px;
+        font-size: 15px;
+      }
+
+      .rk {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+      }
+
+      .pts-g {
+        font-size: 20px;
+      }
+
+      .pts-m {
+        font-size: 14px;
+      }
+
+      .match-card .tbl {
+        min-width: 400px;
+      }
+
+      .match-card .tbl td {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .match-card .tbl thead th {
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar {
+        padding: 6px 10px;
+        gap: 3px;
+      }
+
+      .brand-mark {
+        width: 30px;
+        height: 30px;
+      }
+
+      .brand-mark img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .brand-name {
+        font-size: 15px;
+      }
+
+      .brand-sub {
+        font-size: 9px;
+      }
+
+      .social-link {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+      }
+
+      .social-link img {
+        width: 18px;
+        height: 18px;
+      }
+
+      .conn-status {
+        display: none;
+      }
+
+      .hero {
+        min-height: auto;
+        flex-direction: column;
+        padding: 18px;
+      }
+
+      .hero-bg {
+        background: linear-gradient(180deg, rgba(8, 12, 20, 0.92) 0%, rgba(8, 12, 20, 0.6) 60%, rgba(8, 12, 20, 0.1) 100%),
+          url('./assets/img/capybara_banner.png') center 30% / 100% auto no-repeat;
+      }
+
+      .hero-content {
+        max-width: 100%;
+      }
+
+      .hero-info {
+        grid-template-columns: 1fr 1fr;
+        max-width: 100%;
+      }
+
+      .info-item {
+        padding: 7px 10px;
+      }
+
+      .info-value {
+        font-size: 11px;
+      }
+
+      .cards-row {
+        gap: 8px;
+      }
+
+      .info-card {
+        padding: 10px 12px;
+      }
+
+      .card-value {
+        font-size: 13px;
+      }
+
+      .rewards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .page-header {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .page-header-left h2 {
+        font-size: 20px;
+      }
+
+      .page-header-left p {
+        font-size: 11px;
+      }
+
+      .podium-card {
+        flex: 1 1 100%;
+      }
+
+      .tbl {
+        min-width: 420px;
+      }
+
+      .match-card .tbl {
+        min-width: 340px;
+      }
+
+      .tbl td {
+        font-size: 14px;
+      }
+
+      .rk {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+      }
+
+      .reward-card {
+        padding: 18px 14px;
+      }
+
+      .reward-icon:not(.duo) img {
+        width: 130px;
+        height: 130px;
+      }
+
+      .reward-icon.duo img {
+        width: 100px;
+        height: 100px;
+      }
+
+      .reward-name {
+        font-size: 15px;
+      }
+
+      .section-head {
+        padding: 10px 12px;
+      }
+
+      .section-title {
+        font-size: 14px;
+      }
+
+      .section-body {
+        padding: 10px;
+      }
+
+      .rule-item {
+        padding: 10px 12px;
+      }
+
+      .rule-text {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar {
+        padding: 4px 6px;
+        gap: 2px;
+      }
+
+      .brand {
+        gap: 5px;
+      }
+
+      .brand-mark {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+      }
+
+      .brand-mark img {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+      }
+
+      .brand-name {
+        font-size: 13px;
+      }
+
+      .brand-sub {
+        font-size: 8px;
+      }
+
+      .topbar-right {
+        gap: 2px;
+      }
+
+      .social-link {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        border: none;
+      }
+
+      .social-link img {
+        width: 17px;
+        height: 17px;
+      }
+
+      .conn-status {
+        display: none;
+      }
+
+      .hero {
+        padding: 12px;
+      }
+
+      .hero-eyebrow {
+        font-size: 8px;
+        padding: 3px 8px;
+        margin-bottom: 12px;
+      }
+
+      .hero-title {
+        font-size: clamp(22px, 12vw, 30px);
+        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+      }
+
+      .hero-desc {
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .hero-info {
+        grid-template-columns: 1fr;
+        gap: 5px;
+        margin-top: 12px;
+      }
+
+      .info-item {
+        padding: 6px 8px;
+      }
+
+      .info-label {
+        font-size: 8px;
+      }
+
+      .info-value {
+        font-size: 11px;
+      }
+
+      .cards-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+
+      .info-card {
+        padding: 8px 10px;
+        border-radius: 8px;
+      }
+
+      .card-label {
+        font-size: 8px;
+      }
+
+      .card-value {
+        font-size: 12px;
+      }
+
+      .tbl {
+        min-width: 300px;
+      }
+
+      .tbl thead th {
+        padding: 7px 6px;
+        font-size: 8px;
+        letter-spacing: 0.6px;
+      }
+
+      .tbl td {
+        padding: 7px 6px;
+        font-size: 12px;
+      }
+
+      .rk {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+        border-radius: 6px;
+      }
+
+      .pts-g {
+        font-size: 15px;
+      }
+
+      .pts-m {
+        font-size: 11px;
+      }
+
+      .tbl td:first-child {
+        width: 36px;
+      }
+
+      .tbl td:nth-child(3) {
+        font-size: 12px;
+      }
+
+      .match-card .tbl {
+        min-width: 280px;
+      }
+
+      .match-card .tbl td {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+
+      .match-card .tbl thead th {
+        padding: 6px 8px;
+        font-size: 8px;
+      }
+
+      .section {
+        border-radius: 8px;
+      }
+
+      .section-head {
+        padding: 8px 10px;
+      }
+
+      .section-title {
+        font-size: 13px;
+      }
+
+      .section-body {
+        padding: 8px;
+      }
+
+      .page-header-left h2 {
+        font-size: 17px;
+      }
+
+      .page-header-left p {
+        font-size: 10px;
+      }
+
+      main {
+        padding: 6px;
+        gap: 6px;
+      }
+
+      .podium-card {
+        padding: 10px 12px;
+      }
+
+      .podium-rank {
+        font-size: 18px;
+      }
+
+      .podium-name {
+        font-size: 14px;
+      }
+
+      .podium-stat-val {
+        font-size: 16px;
+      }
+
+      .podium-stat-lbl {
+        font-size: 8px;
+      }
+
+      .empty-msg {
+        padding: 30px 16px;
+        font-size: 12px;
+      }
+
+      .reward-card {
+        padding: 12px 10px;
+        gap: 8px;
+        border-radius: 10px;
+      }
+
+      .reward-icon:not(.duo) img {
+        width: 90px;
+        height: 90px;
+        border-radius: 10px;
+      }
+
+      .reward-icon.duo img {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+      }
+
+      .reward-icon.duo {
+        gap: 10px;
+      }
+
+      .reward-pos {
+        font-size: 9px;
+        letter-spacing: 0.8px;
+      }
+
+      .reward-name {
+        font-size: 13px;
+      }
+
+      .reward-desc {
+        font-size: 10px;
+      }
+
+      .reward-ref {
+        font-size: 8px;
+      }
+
+      .rule-icon {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+      }
+
+      .rule-text {
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .rule-item {
+        padding: 8px 10px;
+        gap: 10px;
+        border-radius: 8px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .nav-item {
+        padding: 2px 5px;
+        font-size: 8px;
+        gap: 2px;
+      }
+
+      .nav-item .nav-icon,
+      .nav-item .nav-icon img {
+        width: 10px;
+        height: 10px;
+      }
+
+      .brand-name {
+        font-size: 11px;
+      }
+
+      .brand-sub {
+        display: none;
+      }
+
+      .social-link {
+        width: 26px;
+        height: 26px;
+      }
+
+      .social-link img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- ═══ TOPBAR ═══════════════════════════════════════════════════════ -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><img src="./assets/img/icono.png" alt="yocapi_pr"></div>
+        <div class="brand-text">
+          <div class="brand-name">Código yocapi </div>
+          <div class="brand-sub">Torneo de yocapi_pr</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Secciones del torneo">
+        <div class="nav-item active" data-section="resumen" onclick="showSection('resumen', this)">
+          <div class="nav-icon"><img src="./assets/img/resumen.png" alt="Resumen"></div>
+          Resumen
+        </div>
+        <div class="nav-item" data-section="clasificacion" onclick="showSection('clasificacion', this)">
+          <div class="nav-icon"><img src="./assets/img/clasificacion.png" alt="Clasificación"></div>
+          Clasificación
+        </div>
+        <div class="nav-item" data-section="recompensas" onclick="showSection('recompensas', this)">
+          <div class="nav-icon"><img src="./assets/img/recompensa.png" alt="Recompensas"></div>
+          Recompensas
+        </div>
+        <div class="nav-item" data-section="desafios" onclick="showSection('desafios', this)">
+          <div class="nav-icon"><img src="./assets/img/objetivo.png" alt="Desafíos"></div>
+          Desafíos
+        </div>
+        <div class="nav-item" data-section="puntuacion" onclick="showSection('puntuacion', this)">
+          <div class="nav-icon"><img src="./assets/img/puntuacion.png" alt="Puntuación"></div>
+          Puntuación
+        </div>
+        <div class="nav-item" data-section="reglas" onclick="showSection('reglas', this)">
+          <div class="nav-icon"><img src="./assets/img/reglas.png" alt="Reglas"></div>
+          Reglas
+        </div>
+      </nav>
+
+      <div class="topbar-right">
+        <div class="social-links">
+          <a class="social-link" href="https://www.twitch.tv/yocapi_pr" target="_blank" rel="noopener"
+            title="Twitch"><img src="./assets/img/twitch.png" alt="Twitch"></a>
+          <a class="social-link" href="https://www.tiktok.com/@yocapi_prr" target="_blank" rel="noopener"
+            title="TikTok"><img src="./assets/img/tiktok.png" alt="TikTok"></a>
+          <a class="social-link" href="https://www.youtube.com/@yocapi" target="_blank" rel="noopener"
+            title="YouTube"><img src="./assets/img/youtube.png" alt="YouTube"></a>
+          <a class="social-link" href="https://www.instagram.com/yocapi_pr" target="_blank" rel="noopener"
+            title="Instagram"><img src="./assets/img/instagram.png" alt="Instagram"></a>
+        </div>
+        <div class="conn-status">
+          <span class="conn-dot" id="conn-dot"></span>
+          <span id="conn-text" class="conn-text">Conectando...</span>
+        </div>
+        <button class="hamburger" id="hamburger-btn" aria-label="Menú" onclick="toggleMobileMenu()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══ MOBILE OVERLAY ══════════════════════════════════════════════════ -->
+    <div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- ═══ MOBILE NAV ══════════════════════════════════════════════════════ -->
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Secciones del torneo">
+      <div class="nav-item active" data-section="resumen" onclick="showSection('resumen', this);closeMobileMenu()">
+        <div class="nav-icon"><img src="./assets/img/resumen.png" alt="Resumen"></div>
+        Resumen
+      </div>
+      <div class="nav-item" data-section="clasificacion" onclick="showSection('clasificacion', this);closeMobileMenu()">
+        <div class="nav-icon"><img src="./assets/img/clasificacion.png" alt="Clasificación"></div>
+        Clasificación
+      </div>
+      <div class="nav-item" data-section="recompensas" onclick="showSection('recompensas', this);closeMobileMenu()">
+        <div class="nav-icon"><img src="./assets/img/recompensa.png" alt="Recompensas"></div>
+        Recompensas
+      </div>
+      <div class="nav-item" data-section="desafios" onclick="showSection('desafios', this);closeMobileMenu()">
+        <div class="nav-icon"><img src="./assets/img/objetivo.png" alt="Desafíos"></div>
+        Desafíos
+      </div>
+      <div class="nav-item" data-section="puntuacion" onclick="showSection('puntuacion', this);closeMobileMenu()">
+        <div class="nav-icon"><img src="./assets/img/puntuacion.png" alt="Puntuación"></div>
+        Puntuación
+      </div>
+      <div class="nav-item" data-section="reglas" onclick="showSection('reglas', this);closeMobileMenu()">
+        <div class="nav-icon"><img src="./assets/img/reglas.png" alt="Reglas"></div>
+        Reglas
+      </div>
+    </nav>
+
+    <!-- ═══ MAIN ══════════════════════════════════════════════════════════ -->
+    <main>
+
+      <!-- ── RESUMEN ─────────────────────────────────────────────────────── -->
+      <section class="page-section active" id="section-resumen">
+        <div class="hero">
+          <div class="hero-bg"></div>
+          <div class="hero-content">
+            <div class="hero-eyebrow">Torneo en Vivo</div>
+            <div class="hero-info">
+              <div class="info-item">
+                <span class="info-label">Modo</span>
+                <span class="info-value">Battle Royale Construcción</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Región</span>
+                <span class="info-value">NA Central</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Modalidad</span>
+                <span class="info-value">Solitario</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Partidas</span>
+                <span class="info-value">3 partidas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- mini standings preview -->
+        <div class="section podium-section">
+          <div class="section-head">
+            <div class="section-title">Top 3 Actual</div>
+            <span class="last-updated" id="mini-updated">Cargando...</span>
+          </div>
+          <div class="podium" id="podium-top3"></div>
+          <div style="padding: 14px 24px; border-top: 1px solid var(--border2);">
+            <span class="nav-item" style="display:inline-flex;width:auto;cursor:pointer;font-size:13px;"
+              onclick="showSection('clasificacion', document.querySelector('[data-section=clasificacion]'))">
+              Ver tabla completa →
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CLASIFICACIÓN ───────────────────────────────────────────────── -->
+      <section class="page-section" id="section-clasificacion">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h2>Clasificación</h2>
+            <p>Resultados acumulados · actualización automática cada 15s</p>
+          </div>
+          <span class="last-updated" id="standings-updated">Esperando datos</span>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Tabla General</div>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl" id="global-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Jugador</th>
+                  <th class="c">Partidas</th>
+                  <th class="c">Kills</th>
+                  <th class="r">Puntos</th>
+                </tr>
+              </thead>
+              <tbody id="standings-body">
+                <tr>
+                  <td class="empty-msg" colspan="5">Cargando clasificación...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="matches-container">
+          <div class="section-head" style="padding:20px 0 12px;border:none;">
+            <div class="section-title">Resultados por Partida</div>
+          </div>
+          <div class="matches-list" id="matches-list"></div>
+        </div>
+      </section>
+
+      <!-- ── RECOMPENSAS ─────────────────────────────────────────────────── -->
+      <section class="page-section" id="section-recompensas">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h2>Recompensas</h2>
+            <p>Los premios se entregan al finalizar el torneo</p>
+          </div>
+        </div>
+
+        <div class="rewards-grid">
+          <div class="reward-card gold">
+            <div class="reward-icon duo">
+              <img src="./assets/img/temporada.jpg" alt="Pase de Batalla">
+              <img src="./assets/img/tienda.png" alt="Skin de Tienda">
+            </div>
+            <div>
+              <div class="reward-pos">Top 1 — Primer Lugar</div>
+              <div class="reward-name">Pase de Batalla y/o Skin de la Tienda</div>
+              <div class="reward-desc">El ganador elige entre Pase de Batalla de la temporada actual o una Skin
+                disponible en la Tienda de objetos.</div>
+              <div class="reward-ref">* Unicamente es referencia</div>
+            </div>
+          </div>
+          <div class="reward-card silver">
+            <div class="reward-icon">
+              <img src="./assets/img/regalo.jpg" alt="Skin de regalo">
+            </div>
+            <div>
+              <div class="reward-pos">Top 2 — Segundo Lugar</div>
+              <div class="reward-name">Skin de la Tienda</div>
+              <div class="reward-desc">Una skin a eleccion del jugador de entre las disponibles en la Tienda de objetos
+                de Fortnite.</div>
+              <div class="reward-ref">* Unicamente es referencia</div>
+            </div>
+          </div>
+          <div class="reward-card bronze">
+            <div class="reward-icon">
+              <img src="./assets/img/gesto.png" alt="Emote">
+            </div>
+            <div>
+              <div class="reward-pos">Top 3 — Tercer Lugar</div>
+              <div class="reward-name">Emote</div>
+              <div class="reward-desc">Un emote a eleccion del jugador disponible en la Tienda de objetos de Fortnite.
+              </div>
+              <div class="reward-ref">* Unicamente es referencia</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Condiciones</div>
+          </div>
+          <div class="section-body">
+            <div class="rules-list">
+              <div class="rule-item">
+                <div class="rule-icon">1</div>
+                <div class="rule-text">Los premios se basan en la posición <strong>final acumulada</strong> al terminar
+                  las 3 partidas.</div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">2</div>
+                <div class="rule-text">Las recompensas son otorgadas directamente por <strong>yocapi_pr</strong> al
+                  finalizar el torneo en stream.</div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">3</div>
+                <div class="rule-text">Para reclamar el premio, el jugador debe haber participado en <strong>al menos 1
+                    partida</strong> del torneo.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── DESAFÍOS ──────────────────────────────────────────────────────── -->
+      <section class="page-section" id="section-desafios">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h2>Desafíos</h2>
+            <p>Completa los desafíos para ganar recompensas adicionales</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">¡Obtén mas puntos!</div>
+          </div>
+          <div class="section-body">
+            <div class="rules-list">
+              <div class="challenge-item">
+                <div class="challenge-icon">1</div>
+                <div class="challenge-text"><strong>Pícame Esta:</strong> Mata a un jugador usando el pico — <strong
+                    style="color:var(--pink);">+5 pts</strong> <em>(válido 1 vez)</em></div>
+              </div>
+              <div class="challenge-item">
+                <div class="challenge-icon">2</div>
+                <div class="challenge-text"><strong>Masca La Hierba:</strong> Gana la partida sin eliminar a nadie —
+                  <strong style="color:var(--pink);">+10 pts</strong></div>
+              </div>
+              <div class="challenge-item">
+                <div class="challenge-icon">3</div>
+                <div class="challenge-text"><strong>Es el Tiro Loco:</strong> Elimina un jugador con un tiro a la cabeza
+                  sin usar mira de Sniper — <strong style="color:var(--pink);">+5 pts c/u</strong> <em>(máx. 3 veces por
+                    partida, +15 pts)</em></div>
+              </div>
+              <div class="challenge-item">
+                <div class="challenge-icon">4</div>
+                <div class="challenge-text"><strong>CapiEilish:</strong> Gana la partida usando la skin de Billie Eilish
+                  — <strong style="color:var(--pink);">+10 pts</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PUNTUACIÓN ──────────────────────────────────────────────────── -->
+      <section class="page-section" id="section-puntuacion">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h2>Puntuación</h2>
+            <p>Sistema de puntos del torneo — Casual y Pro</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Tabla de Puntos por Posición</div>
+          </div>
+          <div class="section-body">
+            <div class="scoring-grid">
+              <div>
+                <div class="scoring-col-title"><span class="dot green"></span> Casual</div>
+                <div class="table-wrap">
+                  <table class="tbl scoring-tbl">
+                    <thead>
+                      <tr>
+                        <th>Posición</th>
+                        <th class="c">Puntos</th>
+                      </tr>
+                    </thead>
+                    <tbody id="scoring-casual-body"></tbody>
+                  </table>
+                </div>
+                <div class="scoring-kill-row" id="scoring-casual-kill">
+                  <span style="font-size:15px;font-weight:700;color:var(--pink);">+</span> <strong>Puntos por eliminación:</strong> <span
+                    id="scoring-casual-kill-val"></span>
+                </div>
+              </div>
+              <div>
+                <div class="scoring-col-title"><span class="dot blue"></span> Pro</div>
+                <div class="table-wrap">
+                  <table class="tbl scoring-tbl">
+                    <thead>
+                      <tr>
+                        <th>Posición</th>
+                        <th class="c">Puntos</th>
+                      </tr>
+                    </thead>
+                    <tbody id="scoring-pro-body"></tbody>
+                  </table>
+                </div>
+                <div class="scoring-kill-row" id="scoring-pro-kill">
+                  <span style="font-size:15px;font-weight:700;color:var(--pink);">+</span> <strong>Puntos por eliminación:</strong> <span
+                    id="scoring-pro-kill-val"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── REGLAS ──────────────────────────────────────────────────────── -->
+      <section class="page-section" id="section-reglas">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h2>Reglas</h2>
+            <p>Normas oficiales del torneo</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Reglamento</div>
+          </div>
+          <div class="section-body">
+            <div class="rules-list">
+              <div class="rule-item">
+                <div class="rule-icon">1</div>
+                <div class="rule-text"><strong>Formato:</strong> 3 partidas acumuladas en modo Battle Royale
+                  Construcción. Gana quien acumule más puntos al final de las 3 partidas.</div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">2</div>
+                <div class="rule-text"><strong>Región:</strong> NA Central únicamente. Los jugadores deben conectarse
+                  desde la región NA Central para garantizar igualdad de condiciones.</div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">3</div>
+                <div class="rule-text"><strong>Modalidad:</strong> Solitario. No se permiten partidas en dúos o equipos.
+                </div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">4</div>
+                <div class="rule-text"><strong>Verificación:</strong> Los resultados (posiciones y eliminaciones) se
+                  cargan desde replays verificados por el equipo de administración.</div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">5</div>
+                <div class="rule-text"><strong>Fair Play:</strong> Cualquier conducta antideportiva, uso de hacks o
+                  modificaciones prohibidas resulta en descalificación inmediata.</div>
+              </div>
+              <div class="rule-item">
+                <div class="rule-icon">6</div>
+                <div class="rule-text"><strong>Soporte:</strong> Ante cualquier discrepancia en resultados, contactar a
+                  <strong>yocapi_pr</strong> directamente a través de sus redes sociales.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STREAMER ────────────────────────────────────────────────────── -->
+      <section class="page-section" id="section-streamer">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h2>La Organizadora</h2>
+            <p>Conoce a la streamer detrás del torneo</p>
+          </div>
+        </div>
+
+        <div class="streamer-hero">
+          <div class="streamer-avatar">YC</div>
+          <div class="streamer-info">
+            <h3>yocapi_pr</h3>
+            <p>Streamer y organizadora del torneo · Battle Royale Construcción · NA Central<br>
+              Sígueme en mis redes para no perderte ningún torneo.</p>
+          </div>
+        </div>
+
+        <div class="social-cards">
+          <a class="social-card" href="https://www.twitch.tv/yocapi_pr" target="_blank" rel="noopener">
+            <div class="social-icon-wrap">⌂</div>
+            <div>
+              <div class="social-platform">Twitch</div>
+              <div class="social-handle">yocapi_pr</div>
+            </div>
+          </a>
+          <a class="social-card" href="https://www.tiktok.com/@yocapi_prr" target="_blank" rel="noopener">
+            <div class="social-icon-wrap">⌂</div>
+            <div>
+              <div class="social-platform">TikTok</div>
+              <div class="social-handle">@yocapi_prr</div>
+            </div>
+          </a>
+          <a class="social-card" href="https://www.youtube.com/@yocapi" target="_blank" rel="noopener">
+            <div class="social-icon-wrap">⌂</div>
+            <div>
+              <div class="social-platform">YouTube</div>
+              <div class="social-handle">@yocapi</div>
+            </div>
+          </a>
+          <a class="social-card" href="https://www.instagram.com/yocapi_pr" target="_blank" rel="noopener">
+            <div class="social-icon-wrap">⌂</div>
+            <div>
+              <div class="social-platform">Instagram</div>
+              <div class="social-handle">@yocapi_pr</div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./assets/js/config.js"></script>
+  <script>
+    const API_BASE = window.TOURNAMENT_API_BASE || `${location.origin}/api`;
+
+    /* ── SPA navigation ──────────────────────────────────────── */
+    function showSection(id, el) {
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.toggle('active', n.dataset.section === id);
+      });
+      if (id === 'puntuacion') fetchScoring();
+    }
+
+    function toggleMobileMenu() {
+      const btn = document.getElementById('hamburger-btn');
+      const nav = document.getElementById('mobile-nav');
+      const overlay = document.getElementById('mobile-overlay');
+      const isOpen = btn.classList.toggle('open');
+      nav.classList.toggle('open');
+      overlay.classList.toggle('open');
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
+    function closeMobileMenu() {
+      document.getElementById('hamburger-btn').classList.remove('open');
+      document.getElementById('mobile-nav').classList.remove('open');
+      document.getElementById('mobile-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    /* ── Scoring fetch ─────────────────────────────────────────── */
+    async function fetchScoring() {
+      try {
+        const res = await fetch(`${API_BASE}/scoring`);
+        const data = await res.json();
+        renderScoringTable('scoring-casual-body', data.casual_points, '#25b981');
+        renderScoringTable('scoring-pro-body', data.pro_points, '#6366f1');
+        document.getElementById('scoring-casual-kill-val').textContent = '+' + (data.casual_kill_points ?? 1) + ' pt por kill';
+        document.getElementById('scoring-pro-kill-val').textContent = '+' + (data.pro_kill_points ?? 1) + ' pt por kill';
+      } catch(e) { console.error('fetchScoring', e); }
+    }
+
+    function renderScoringTable(tbodyId, points, color) {
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = '';
+      const ranges = [
+        '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15',
+        {label:'16–20', positions:[16,17,18,19,20]},
+        {label:'21–25', positions:[21,22,23,24,25]}
+      ];
+      ranges.forEach(r => {
+        const label = typeof r === 'string' ? r : r.label;
+        const first = typeof r === 'string' ? parseInt(r) : r.positions[0];
+        const val = points[String(first)] ?? points[first] ?? 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${label}</td><td class="c pink">${val}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ── HTML escape ─────────────────────────────────────────── */
+    function esc(v) {
+      return String(v ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ── Rank helper ──────────────────────────────────────────── */
+    function rk(i) { return i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : ''; }
+
+    /* ── Render global standings ──────────────────────────────── */
+    function renderGlobal(rows) {
+      const body = document.getElementById('standings-body');
+      if (!rows || !rows.length) {
+        body.innerHTML = `<tr><td class="empty-msg" colspan="5">Aún no hay resultados publicados.</td></tr>`;
+        return;
+      }
+      body.innerHTML = '';
+      rows.forEach((p, i) => {
+        const tr = document.createElement('tr');
+        if (i === 0) tr.classList.add('is-leader');
+        tr.innerHTML = `
+          <td><div class="rk ${rk(i)}">${i + 1}</div></td>
+          <td>${esc(p.display_name || p.username)}</td>
+          <td class="c pts-m">${Number(p.matches_played || 0)}</td>
+          <td class="c">${Number(p.total_kills || 0)}</td>
+          <td class="r pts-g ${rk(i)}">${Number(p.total_points || 0)}</td>`;
+        body.appendChild(tr);
+      });
+
+      // Mini top 3 — podium cards
+      const podium = document.getElementById('podium-top3');
+      if (podium) {
+        podium.innerHTML = '';
+        const top3 = (rows || []).slice(0, 3);
+        if (!top3.length) {
+          podium.innerHTML = '<div class="empty-msg" style="padding:30px">Sin resultados aún.</div>';
+        } else {
+          // Order: 2nd → 1st → 3rd for visual display
+          const order = top3.length >= 2 ? [top3[1], top3[0], top3[2]] : [top3[0]];
+          const cls = ['silver', 'gold', 'bronze'];
+          order.forEach((p, i) => {
+            const rankLabel = i === 0 ? '2' : i === 1 ? '1' : '3';
+            const card = document.createElement('div');
+            card.className = `podium-card ${cls[i] || ''}`;
+            card.innerHTML = `
+              <div class="podium-rank">#${rankLabel}</div>
+              <div class="podium-name">${esc(p.display_name || p.username)}</div>
+              <div class="podium-stats">
+                <div class="podium-stat">
+                  <div class="podium-stat-val">${Number(p.total_kills || 0)}</div>
+                  <div class="podium-stat-lbl">Kills</div>
+                </div>
+                <div class="podium-stat">
+                  <div class="podium-stat-val">${Number(p.total_points || 0)}</div>
+                  <div class="podium-stat-lbl">Puntos</div>
+                </div>
+              </div>`;
+            podium.appendChild(card);
+          });
+        }
+      }
+    }
+
+    /* ── Render per-match tables ──────────────────────────────── */
+    function renderMatches(matches) {
+      const list = document.getElementById('matches-list');
+      if (!matches || !matches.length) {
+        list.innerHTML = `<div class="empty-msg">No hay partidas registradas aún.</div>`;
+        return;
+      }
+      list.innerHTML = '';
+      matches.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        card.innerHTML = `
+          <div class="match-card-head">
+            <span class="match-num">Partida #${m.match_number}</span>
+            <span class="match-badge-det">${m.is_active ? 'En curso' : 'Finalizada'}</span>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead><tr>
+                <th>#</th>
+                <th>Jugador</th>
+                <th class="c">Posición</th>
+                <th class="c">Kills</th>
+                <th class="c">P. Ubicación</th>
+                <th class="r">Puntos</th>
+              </tr></thead>
+              <tbody id="match-rows-${m.id}">
+                <tr><td class="empty-msg" colspan="6">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>`;
+        list.appendChild(card);
+        loadMatchResults(m.id, m.match_number);
+      });
+    }
+
+    async function loadMatchResults(matchId, matchNum) {
+      try {
+        const res = await fetch(`${API_BASE}/matches/${matchId}/results`);
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        const tbody = document.getElementById(`match-rows-${matchId}`);
+        if (!tbody) return;
+        if (!data || !data.length) {
+          tbody.innerHTML = `<tr><td class="empty-msg" colspan="6">Sin resultados.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = '';
+        data.forEach((r, i) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><div class="rk ${rk(i)}">${i + 1}</div></td>
+            <td>${esc(r.display_name || r.username)}</td>
+            <td class="c">${r.position}°</td>
+            <td class="c">${r.kills}</td>
+            <td class="c pts-m">${r.placement_points}</td>
+            <td class="r pts-g">${r.total_points}</td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(`Error loading match ${matchId} results:`, err);
+      }
+    }
+
+    /* ── Load all data ────────────────────────────────────────── */
+    async function loadStandings() {
+      const dot = document.getElementById('conn-dot');
+      const txt = document.getElementById('conn-text');
+      try {
+        const [sRes, mRes] = await Promise.all([
+          fetch(`${API_BASE}/standings`),
+          fetch(`${API_BASE}/matches`)
+        ]);
+        if (!sRes.ok) throw new Error('API error');
+        const standings = await sRes.json();
+        const matches = await mRes.json();
+
+        renderGlobal(standings || []);
+        renderMatches(matches || []);
+
+        const now = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('standings-updated').textContent = `Actualizado ${now}`;
+        const miniUpdated = document.getElementById('mini-updated');
+        if (miniUpdated) miniUpdated.textContent = `Actualizado ${now}`;
+        dot.className = 'conn-dot live';
+        txt.textContent = 'En vivo';
+      } catch (err) {
+        console.error('API error:', err);
+        dot.className = 'conn-dot error';
+        txt.textContent = 'Sin conexión';
+        document.getElementById('standings-updated').textContent = 'Error al cargar';
+      }
+    }
+
+    /* ── Boot ────────────────────────────────────────────────── */
+    loadStandings();
+    setInterval(loadStandings, 15000);
+  </script>
+</body>
+
+</html>
