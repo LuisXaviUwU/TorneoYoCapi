@@ -102,6 +102,10 @@ def toggle_player_pro(player_id: int, db=Depends(get_db)):
 
 # ─── Standings API ────────────────────────────────────────────────────────────
 
+@app.head("/api/standings")
+def head_standings():
+    return {"ok": True}
+
 @app.get("/api/standings")
 def get_standings(db=Depends(get_db)):
     return build_standings(db)
