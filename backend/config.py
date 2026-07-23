@@ -67,7 +67,7 @@ class Config:
 
     # ── Puntos por eliminación ───────────────────────────────────────────────
     kill_points: int = 1  # legacy, unificado
-    casual_kill_points: int = 1
+    casual_kill_points: int = 2
     pro_kill_points: int = 1
 
     # ── Nombre del torneo ────────────────────────────────────────────────────
