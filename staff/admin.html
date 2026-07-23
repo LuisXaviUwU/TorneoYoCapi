@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Torneo Fortnite · yocapi_pr</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══ TOKENS ════════════════════════════════════════════════════════════ */
+    :root {
+      --bg:       #060912;
+      --panel:    #0c1120;
+      --panel2:   #101828;
+      --border:   rgba(255,255,255,0.08);
+      --border2:  rgba(255,255,255,0.04);
+      --text:     #f0f6ff;
+      --muted:    #7b90b2;
+      --blue:     #6366f1;
+      --cyan:     #22d3ee;
+      --green:    #10b981;
+      --gold:     #f59e0b;
+      --silver:   #94a3b8;
+      --bronze:   #b45309;
+      --danger:   #ef4444;
+      --pink:     #ec4899;
+      --shadow:   0 24px 60px rgba(0,0,0,0.55);
+      --sidebar:  260px;
+      --radius:   12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 10%, rgba(99,102,241,0.09) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 70% at 90% 90%, rgba(34,211,238,0.06) 0%, transparent 60%);
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ═══ LOGIN SCREEN ══════════════════════════════════════════════════════ */
+    #login-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+    }
+    #login-screen::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 50% 40%, rgba(99,102,241,0.12) 0%, transparent 70%);
+    }
+    .login-card {
+      position: relative; z-index: 1;
+      width: 380px;
+      padding: 40px 36px;
+      background: rgba(12,17,32,0.95);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow), 0 0 60px rgba(99,102,241,0.12);
+      animation: loginIn 0.4s ease-out;
+    }
+    @keyframes loginIn {
+      from { opacity:0; transform: scale(0.96) translateY(16px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .login-logo {
+      width: 60px; height: 60px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      display: grid; place-items: center;
+      font-family: Rajdhani, sans-serif; font-size: 26px; font-weight: 700; color: #fff;
+      box-shadow: 0 6px 24px rgba(99,102,241,0.4);
+      margin-bottom: 20px;
+    }
+    .login-title {
+      font-family: Rajdhani, sans-serif; font-size: 26px; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .form-input {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); font-family: Inter, sans-serif; font-size: 14px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input:focus { outline: none; border-color: var(--blue); background: rgba(99,102,241,0.06); }
+
+    .login-btn {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--blue), #818cf8);
+      color: #fff; font-family: Inter, sans-serif; font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 20px;
+      box-shadow: 0 6px 20px rgba(99,102,241,0.35);
+      transition: all 0.2s;
+    }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(99,102,241,0.45); }
+    .login-btn:active { transform: translateY(0); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .login-error {
+      margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+      color: #fca5a5; font-size: 13px; font-weight: 600;
+      display: none;
+    }
+    .login-error.show { display: block; }
+
+    /* ═══ APP ════════════════════════════════════════════════════════════════ */
+    #app {
+      display: none;
+      position: relative; z-index: 1;
+      min-height: 100vh;
+    }
+    #app.visible { display: grid; grid-template-columns: var(--sidebar) 1fr; }
+
+    /* ═══ SIDEBAR ═══════════════════════════════════════════════════════════ */
+    .sidebar {
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: rgba(6,9,18,0.95);
+      backdrop-filter: blur(24px);
+      padding: 24px 16px;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 11px;
+      padding: 0 6px 22px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      display: grid; place-items: center;
+      font-family: Rajdhani, sans-serif; font-size: 19px; font-weight: 700; color: #fff;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+    }
+    .brand-name {
+      font-family: Rajdhani, sans-serif; font-size: 17px; font-weight: 700;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .brand-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+    .nav-label {
+      font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--muted); padding: 12px 10px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 11px; border-radius: 9px;
+      cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted);
+      border: 1px solid transparent; transition: all 0.16s;
+      user-select: none;
+    }
+    .nav-icon {
+      width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 14px;
+      background: rgba(255,255,255,0.05); transition: background 0.16s;
+    }
+    .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); border-color: var(--border); }
+    .nav-item.active { color: var(--cyan); background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.25); }
+    .nav-item.active .nav-icon { background: rgba(34,211,238,0.15); }
+
+    .sidebar-footer {
+      margin-top: auto; border-top: 1px solid var(--border);
+      padding-top: 14px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .pub-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 9px; border-radius: 9px; font-size: 12px; font-weight: 700;
+      border: 1px solid var(--border); color: var(--muted);
+      transition: all 0.18s;
+    }
+    .pub-link:hover { color: var(--text); border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    .logout-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 9px; border-radius: 9px; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(239,68,68,0.25); color: #f87171;
+      background: none; cursor: pointer; width: 100%;
+      font-family: Inter, sans-serif; transition: all 0.18s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.4); }
+
+    /* ═══ MAIN ══════════════════════════════════════════════════════════════ */
+    main {
+      padding: 28px 32px;
+      display: flex; flex-direction: column; gap: 0;
+      min-width: 0; overflow: hidden;
+    }
+
+    /* ═══ PAGE SECTIONS ═════════════════════════════════════════════════════ */
+    .page-section { display: none; flex-direction: column; gap: 20px; animation: fadeIn 0.22s ease-out; }
+    .page-section.active { display: flex; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+    .page-hdr { margin-bottom: 4px; }
+    .page-hdr h2 { font-family: Rajdhani, sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+    .page-hdr p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ═══ STAT CARDS ════════════════════════════════════════════════════════ */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat-card {
+      padding: 18px 20px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--panel);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(34,211,238,0.25); transform: translateY(-2px); }
+    .stat-lbl { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .stat-val { font-size: 28px; font-family: Rajdhani, sans-serif; font-weight: 700; color: var(--text); }
+    .stat-val.accent { color: var(--cyan); }
+
+    /* ═══ CARD COMPONENT ════════════════════════════════════════════════════ */
+    .card {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: rgba(12,17,32,0.9); overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .card-head {
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .card-title {
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .card-body { padding: 20px 22px; }
+
+    /* ═══ LEADERBOARD ════════════════════════════════════════════════════════ */
+    .lb-head, .lb-row {
+      display: grid;
+      grid-template-columns: 48px 1fr 80px 80px 100px;
+      align-items: center; gap: 8px;
+    }
+    .lb-head {
+      padding: 11px 22px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .lb-head .right, .lb-row .right { text-align: right; }
+    .lb-row {
+      padding: 13px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.025);
+      transition: background 0.15s;
+    }
+    .lb-row:hover { background: rgba(255,255,255,0.02); }
+    .lb-row:last-child { border-bottom: none; }
+    .rank-n { font-size: 18px; font-weight: 900; color: var(--muted); text-align: center; font-family: Rajdhani, sans-serif; }
+    .rank-n.gold   { color: var(--gold);   text-shadow: 0 0 12px rgba(245,158,11,0.5); }
+    .rank-n.silver { color: var(--silver); }
+    .rank-n.bronze { color: var(--bronze); }
+    .player-cell { display: flex; align-items: center; gap: 10px; }
+    .p-avatar {
+      width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 13px; color: #fff;
+    }
+    .p-name { font-weight: 700; font-size: 14px; }
+    .cell-v { text-align: right; font-weight: 600; color: var(--muted); font-size: 14px; }
+    .cell-pts { text-align: right; font-weight: 800; color: var(--cyan); font-size: 16px; font-family: Rajdhani, sans-serif; }
+    .badge {
+      font-size: 9px; padding: 2px 6px; border-radius: 4px;
+      font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+      margin-left: 6px; vertical-align: middle;
+    }
+    .badge-pro { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.35); }
+    .badge-cas { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35); }
+    .part-badge { background: rgba(245,200,66,0.15); color: #f5c842; border: 1px solid rgba(245,200,66,0.3); }
+    .empty-state { text-align:center; padding:50px 24px; color:var(--muted); font-size:14px; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* ═══ BTN SYSTEM ════════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 16px; border-radius: 9px; border: none;
+      font-family: Inter, sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--blue), #818cf8); color: #fff; box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); }
+    .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+    .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+    .btn-danger:hover { background: rgba(239,68,68,0.22); }
+    .btn-success { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .btn-success:hover { background: rgba(16,185,129,0.25); }
+    .btn-block { width: 100%; }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none!important; }
+
+    /* ═══ REPLAY PANEL ══════════════════════════════════════════════════════ */
+    .replay-zone {
+      border: 2px dashed rgba(99,102,241,0.35); border-radius: 12px;
+      padding: 28px 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s; margin-bottom: 14px;
+    }
+    .replay-zone:hover, .replay-zone.dragover {
+      border-color: var(--blue); background: rgba(99,102,241,0.06);
+    }
+    .replay-zone-icon { font-size: 2.4rem; margin-bottom: 8px; }
+    .replay-info-box {
+      background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 10px; padding: 12px 14px;
+      font-size: 12px; color: #a5b4fc; margin-bottom: 14px; line-height: 1.5;
+    }
+    .replay-info-box code { font-size: 11px; color: var(--cyan); display:block; margin-top:5px; word-break:break-all; }
+
+    /* ═══ PLAYERS SECTION ═══════════════════════════════════════════════════ */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .input-group { display: flex; flex-direction: column; gap: 4px; }
+    .input-label { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+    .player-list { display: flex; flex-direction: column; gap: 7px; max-height: 360px; overflow-y: auto; margin-top: 14px; }
+    .player-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 10px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    }
+    .player-item-name { font-weight: 700; font-size: 14px; }
+    .player-item-tag { font-size: 11px; color: var(--muted); font-family: monospace; }
+
+    /* ═══ MATCH LIST ════════════════════════════════════════════════════════ */
+    .match-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; border-radius: 10px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .match-num { font-family: Rajdhani, sans-serif; font-size: 20px; font-weight: 700; color: var(--cyan); }
+    .match-date { font-size: 12px; color: var(--muted); }
+    .match-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ═══ REPLAY RESULTS TABLE ══════════════════════════════════════════════ */
+    .results-table { width: 100%; border-collapse: collapse; }
+    .results-table th {
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted);
+      padding: 10px 10px; border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .results-table td { padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .form-input-sm {
+      width: 70px; padding: 5px 8px; border-radius: 7px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      color: var(--text); font-family: Inter, sans-serif;
+      font-size: 13px; text-align: center;
+    }
+    .form-input-sm:focus { outline: none; border-color: var(--blue); }
+
+    /* ═══ MODAL ═════════════════════════════════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #0d1527; border: 1px solid var(--border); border-radius: 20px;
+      width: 90%; max-width: 680px; max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.65);
+      animation: modalIn 0.25s ease-out;
+    }
+    @keyframes modalIn { from { opacity:0; transform:scale(0.94) translateY(12px); } to { opacity:1; transform:none; } }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border); }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+    .close-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; transition: color 0.18s; }
+    .close-btn:hover { color: var(--text); }
+    .loading-spinner { text-align:center; padding:40px; color:var(--muted); }
+    .loading-spinner::after {
+      content:''; display:block; width:32px; height:32px;
+      border: 3px solid var(--border); border-top-color: var(--blue);
+      border-radius:50%; animation: spin 0.8s linear infinite; margin:14px auto 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══ CONFIG SECTION ════════════════════════════════════════════════════ */
+    .config-grid { display: grid; gap: 14px; }
+    .config-item {
+      padding: 18px 20px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--panel);
+    }
+    .pro-select {
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); font-family: Inter, sans-serif; font-size: 14px;
+      cursor: pointer; margin-top: 10px;
+    }
+    .pro-select:focus { outline: none; border-color: var(--blue); }
+    .pro-select option { background: #0d1527; }
+
+    /* ═══ TOAST ═════════════════════════════════════════════════════════════ */
+    #toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+    .toast {
+      padding: 13px 18px; border-radius: 11px; font-weight: 600; font-size: 13px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: toastIn 0.3s ease-out; max-width: 360px;
+    }
+    @keyframes toastIn { from { opacity:0; transform:translateX(28px); } to { opacity:1; transform:none; } }
+    .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+    .toast.error   { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
+    .toast.info    { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc; }
+    .toast.warning { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ═══ RESPONSIVE ════════════════════════════════════════════════════════ */
+    @media (max-width: 1000px) {
+      #app.visible { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static; height: auto; border-right: 0;
+        border-bottom: 1px solid var(--border);
+        flex-direction: row; flex-wrap: wrap; padding: 14px 16px; gap: 6px;
+      }
+      .brand { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+      .nav-label { display: none; }
+      .nav-item { padding: 8px 11px; font-size: 12px; }
+      .sidebar-footer { flex-direction: row; align-items: center; border-top: 0; padding-top: 0; margin-top: 0; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      main { padding: 18px; }
+    }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      main { padding: 14px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">⌂</div>
+    <div class="login-title">Panel Admin</div>
+    <p class="login-sub">Torneo Fortnite · yocapi_pr — Acceso restringido</p>
+
+    <div class="form-group">
+      <label class="form-label" for="login-email">Correo</label>
+      <input class="form-input" type="email" id="login-email" placeholder="torneocapifortnite@gmail.com"
+             onkeydown="if(event.key==='Enter')doLogin()" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="login-pass">Contraseña</label>
+      <input class="form-input" type="password" id="login-pass" placeholder="••••••"
+             onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password" />
+    </div>
+
+    <div class="login-error" id="login-error">Credenciales incorrectas. Inténtalo de nuevo.</div>
+
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Iniciar Sesión</button>
+  </div>
+</div>
+
+<!-- ═══ APP ════════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- ── SIDEBAR ────────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">YC</div>
+      <div>
+        <div class="brand-name">yocapi_pr</div>
+        <div class="brand-sub">Panel Admin</div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Secciones admin">
+      <div class="nav-label">Administración</div>
+
+      <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard', this)">
+        <div class="nav-icon">⌂</div>
+        Dashboard
+      </div>
+      <div class="nav-item" data-section="replay" onclick="showSection('replay', this)">
+        <div class="nav-icon">⌂</div>
+        Importar Replay
+      </div>
+      <div class="nav-item" data-section="jugadores" onclick="showSection('jugadores', this)">
+        <div class="nav-icon">⌂</div>
+        Jugadores
+      </div>
+      <div class="nav-item" data-section="partidas" onclick="showSection('partidas', this)">
+        <div class="nav-icon">⌂</div>
+        Partidas
+      </div>
+      <div class="nav-item" data-section="puntuacion" onclick="showSection('puntuacion', this)">
+        <div class="nav-icon">⌂</div>
+        Puntuación
+      </div>
+      <div class="nav-item" data-section="config" onclick="showSection('config', this)">
+        <div class="nav-icon">⌂</div>
+        Configuración
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="pub-link" href="../index.html" target="_blank">Vista Pública</a>
+      <button class="logout-btn" onclick="doLogout()">Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ───────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- ════ DASHBOARD ════════════════════════════════════════════════════ -->
+    <section class="page-section active" id="section-dashboard">
+      <div class="page-hdr">
+        <h2>Dashboard</h2>
+        <p>Resumen del torneo en tiempo real</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-lbl">Partidas</div>
+          <div class="stat-val accent" id="stat-matches">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Jugadores</div>
+          <div class="stat-val" id="stat-players">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Kills Totales</div>
+          <div class="stat-val" id="stat-kills">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Líder Actual</div>
+          <div class="stat-val" id="stat-leader" style="font-size:1rem;">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Clasificación General</span>
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="fetchDashboard()">Actualizar</button>
+        </div>
+        <div class="lb-head">
+          <div style="text-align:center;">#</div>
+          <div>Jugador</div>
+          <div class="right">Kills</div>
+          <div class="right">Partidas</div>
+          <div class="right">Puntos</div>
+        </div>
+        <div id="leaderboard-body">
+<div class="empty-state"><div class="empty-icon">—</div><p>Importa un replay para ver la clasificación</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ IMPORTAR REPLAY ══════════════════════════════════════════════ -->
+    <section class="page-section" id="section-replay">
+      <div class="page-hdr">
+        <h2>Importar Replay</h2>
+        <p>Sube el archivo .replay de Fortnite para registrar una partida</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Archivo de Replay</span>
+        </div>
+        <div class="card-body">
+          <div class="replay-info-box">
+            Selecciona tu archivo <strong>.replay</strong> de Fortnite. Lo encontrarás en:
+            <code>%localappdata%\FortniteGame\Saved\Demos</code>
+          </div>
+
+          <input type="file" id="replay-file-input" accept=".replay" style="display:none" onchange="handleReplayFile(this)" />
+
+          <div id="replay-dropzone" class="replay-zone"
+            onclick="document.getElementById('replay-file-input').click()"
+            ondragover="event.preventDefault();this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="event.preventDefault();this.classList.remove('dragover');handleReplayDrop(event)">
+            <div class="replay-zone-icon">⌂</div>
+            <div style="font-weight:700;margin-bottom:4px;">Haz clic para seleccionar</div>
+            <div style="font-size:12px;color:var(--muted);">o arrastra tu archivo .replay aquí</div>
+          </div>
+
+          <div id="selected-file-name" style="font-size:12px;color:var(--cyan);min-height:18px;text-align:center;margin-bottom:10px;"></div>
+
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;">
+            <input type="checkbox" id="replay-debug-toggle" style="width:14px;height:14px;accent-color:var(--blue);" />
+            <span>Guardar JSON crudo para diagnóstico</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Replay results card (hidden initially) -->
+      <div class="card" id="replay-results-card" style="display:none;">
+        <div class="card-head">
+          <span class="card-title">Resultados del Replay</span>
+          <span id="replay-filename-display" style="font-size:11px;color:var(--cyan);font-family:monospace;"></span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="replay-loading" class="loading-spinner" style="display:none;">Procesando archivo .replay...</div>
+          <div id="replay-results-container" style="display:none;max-height:400px;overflow-y:auto;">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Jugador</th>
+                  <th style="text-align:center;">Kills</th>
+                  <th style="text-align:center;">Ajuste</th>
+                  <th style="text-align:center;">Posición</th>
+                </tr>
+              </thead>
+              <tbody id="replay-players-table"></tbody>
+            </table>
+          </div>
+          <div id="replay-initial-msg" style="text-align:center;padding:30px;color:var(--muted);">
+            <div style="font-size:2rem;margin-bottom:8px;">⌂</div>
+            <p>Selecciona un archivo <strong style="color:var(--text);">.replay</strong><br>para procesar los resultados.</p>
+          </div>
+          <div style="padding:16px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+            <button class="btn btn-ghost" onclick="resetReplay()">✕ Cancelar</button>
+            <button class="btn btn-primary" id="btn-submit-replay" onclick="submitReplayData()" style="display:none;">Guardar Resultados</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ JUGADORES ════════════════════════════════════════════════════ -->
+    <section class="page-section" id="section-jugadores">
+      <div class="page-hdr">
+        <h2>Gestión de Jugadores</h2>
+        <p>Agrega o elimina jugadores del torneo</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Nuevo Jugador</span>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="input-group">
+              <label class="input-label" for="input-username">Username en Fortnite *</label>
+              <input type="text" class="form-input" id="input-username" placeholder="GamerTag123"
+                     onkeydown="if(event.key==='Enter')addPlayer()" />
+            </div>
+            <div class="input-group">
+              <label class="input-label" for="input-display">Nombre a mostrar</label>
+              <input type="text" class="form-input" id="input-display" placeholder="Jugador 1"
+                     onkeydown="if(event.key==='Enter')addPlayer()" />
+            </div>
+          </div>
+          <div class="input-group" style="margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;">
+              <input type="checkbox" id="input-is-pro" style="width:15px;height:15px;accent-color:var(--blue);" />
+              <span>Jugador Profesional (tabla de puntos PRO)</span>
+            </label>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="addPlayer()">Agregar Jugador</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Jugadores Registrados</span>
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px;" onclick="fetchPlayers()">Actualizar</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="player-list-container" class="player-list" style="padding:14px 22px;max-height:420px;overflow-y:auto;">
+            <p style="color:var(--muted);text-align:center;padding:20px;">Cargando jugadores...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ PARTIDAS ═════════════════════════════════════════════════════ -->
+    <section class="page-section" id="section-partidas">
+      <div class="page-hdr">
+        <h2>Historial de Partidas</h2>
+        <p>Partidas registradas en el torneo (máximo 3)</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Partidas Registradas</span>
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px;" onclick="fetchMatches()">Actualizar</button>
+        </div>
+        <div class="card-body">
+          <div id="matches-container">
+            <p style="color:var(--muted);font-size:13px;">Sin partidas registradas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ PUNTUACIÓN ═══════════════════════════════════════════════════ -->
+    <section class="page-section" id="section-puntuacion">
+      <div class="page-hdr">
+        <h2>Puntuación</h2>
+        <p>Tablas de puntos por posición — Casual y Pro</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Tabla de Puntos por Posición</span>
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px;" onclick="fetchScoring()">Recargar</button>
+        </div>
+        <div class="card-body" style="overflow-x:auto;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;min-width:500px;">
+            <div>
+              <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);margin-right:6px;"></span>
+                Casual
+              </div>
+              <table class="results-table" style="font-size:13px;">
+                <thead>
+                  <tr>
+                    <th style="width:70px;">Posición</th>
+                    <th style="text-align:center;">Puntos</th>
+                  </tr>
+                </thead>
+                <tbody id="scoring-casual-body"></tbody>
+              </table>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--blue);margin-right:6px;"></span>
+                Pro
+              </div>
+              <table class="results-table" style="font-size:13px;">
+                <thead>
+                  <tr>
+                    <th style="width:70px;">Posición</th>
+                    <th style="text-align:center;">Puntos</th>
+                  </tr>
+                </thead>
+                <tbody id="scoring-pro-body"></tbody>
+              </table>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);"></span>
+              <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Casual x kill:</span>
+              <input type="number" id="scoring-casual-kill-points" class="form-input-sm" min="0" max="99" value="1" style="width:60px;text-align:center;color:#25b981;border-color:#25b98133;font-weight:700;" />
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);"></span>
+              <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Pro x kill:</span>
+              <input type="number" id="scoring-pro-kill-points" class="form-input-sm" min="0" max="99" value="1" style="width:60px;text-align:center;color:#6366f1;border-color:#6366f133;font-weight:700;" />
+            </div>
+            <span style="font-size:11px;color:var(--muted);">Se multiplica por las kills de cada jugador</span>
+          </div>
+          <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;">
+            <button class="btn btn-ghost" onclick="fetchScoring()">Cancelar</button>
+            <button class="btn btn-primary" id="btn-save-scoring" onclick="saveScoring()">Guardar Puntuación</button>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);text-align:right;">Los puntos se recalculan automáticamente al guardar.</p>
+    </section>
+
+    <!-- ════ CONFIGURACIÓN ════════════════════════════════════════════════ -->
+    <section class="page-section" id="section-config">
+      <div class="page-hdr">
+        <h2>Configuración</h2>
+        <p>Ajustes del sistema de puntuación del torneo</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Puntos Extra PRO</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+            Selecciona cuántos puntos de bonificación se sumarán por partida a los jugadores con etiqueta <strong style="color:#a5b4fc;">PRO</strong>.
+          </p>
+          <label class="input-label" for="pro-bonus-select">Bonus por partida</label>
+          <select id="pro-bonus-select" class="pro-select" onchange="updateProBonus(this.value)">
+            <option value="0">+0 Puntos</option>
+            <option value="1">+1 Punto</option>
+            <option value="2">+2 Puntos</option>
+            <option value="3">+3 Puntos</option>
+            <option value="4">+4 Puntos</option>
+            <option value="5">+5 Puntos</option>
+          </select>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px;">Los puntos se recalculan automáticamente al guardar.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Información del Torneo</span>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="padding:14px 16px;border-radius:10px;background:var(--panel2);border:1px solid var(--border);">
+              <div class="stat-lbl">Modo</div>
+              <div style="font-weight:700;margin-top:4px;">Battle Royale Construcción</div>
+            </div>
+            <div style="padding:14px 16px;border-radius:10px;background:var(--panel2);border:1px solid var(--border);">
+              <div class="stat-lbl">Región</div>
+              <div style="font-weight:700;margin-top:4px;">NA Central</div>
+            </div>
+            <div style="padding:14px 16px;border-radius:10px;background:var(--panel2);border:1px solid var(--border);">
+              <div class="stat-lbl">Modalidad</div>
+              <div style="font-weight:700;margin-top:4px;">Solitario</div>
+            </div>
+            <div style="padding:14px 16px;border-radius:10px;background:var(--panel2);border:1px solid var(--border);">
+              <div class="stat-lbl">Partidas</div>
+              <div style="font-weight:700;margin-top:4px;">3 partidas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL: Killfeed -->
+<div class="modal-overlay" id="modal-killfeed">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="killfeed-title">Historial de Bajas</div>
+      <button class="close-btn" onclick="closeModal('modal-killfeed')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div style="max-height:500px;overflow-y:auto;">
+        <table class="results-table" style="font-size:13px;">
+          <thead>
+            <tr>
+              <th style="text-align:center;width:80px;">Tiempo</th>
+              <th>Detalle de Eliminación</th>
+            </tr>
+          </thead>
+          <tbody id="killfeed-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Ajuste de kills -->
+<div class="modal-overlay" id="modal-adjust">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div class="modal-title" id="adjust-title">Ajustar Kills</div>
+      <button class="close-btn" onclick="closeModal('modal-adjust')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div style="max-height:500px;overflow-y:auto;padding:20px;">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+          Ajuste manual de kills (negativo para restar) y puntos extra (desafios).<br>
+          Se recalcula automaticamente al guardar.
+        </p>
+        <table class="results-table" style="font-size:13px;">
+          <thead>
+            <tr>
+              <th>Jugador</th>
+              <th style="text-align:center;">Kills</th>
+              <th style="text-align:center;">Ajuste</th>
+              <th style="text-align:center;">Bonus</th>
+            </tr>
+          </thead>
+          <tbody id="adjust-table-body"></tbody>
+        </table>
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px;">
+          <button class="btn btn-ghost" onclick="closeModal('modal-adjust')">Cancelar</button>
+          <button class="btn btn-primary" id="btn-save-adjust" onclick="saveAdjust()">Guardar Ajustes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- Scripts -->
+  <script src="../assets/js/config.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   AUTH — hardcoded credentials (client-side only)
+═══════════════════════════════════════════════════════════════ */
+const ADMIN_EMAIL = 'torneocapifortnite@gmail.com';
+const ADMIN_PASS  = '260726';
+const SESSION_KEY = 'ycap_admin_session';
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-error');
+
+  err.classList.remove('show');
+
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    btn.disabled = true;
+    btn.textContent = 'Accediendo...';
+    setTimeout(activateApp, 400);
+  } else {
+    err.classList.add('show');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function activateApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  fetchDashboard();
+  fetchConfig();
+  setInterval(fetchDashboard, 15000);
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+/* auto-login if session exists */
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem(SESSION_KEY)) {
+    activateApp();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   API
+═══════════════════════════════════════════════════════════════ */
+const API = window.TOURNAMENT_API_BASE
+  || localStorage.getItem('TOURNAMENT_API_BASE')
+  || `${location.origin}/api`;
+
+const state = { standings: [], players: [], matches: [] };
+
+/* ═══════════════════════════════════════════════════════════════
+   SPA NAVIGATION
+═══════════════════════════════════════════════════════════════ */
+function showSection(id, el) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+
+  // lazy-load data for specific sections
+  if (id === 'jugadores')  fetchPlayers();
+  if (id === 'partidas')   fetchMatches();
+  if (id === 'puntuacion') fetchScoring();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════════════════════ */
+async function fetchDashboard() {
+  await Promise.all([fetchStandings(), fetchPlayers(), fetchMatches()]);
+}
+
+async function fetchStandings() {
+  try {
+    const res = await fetch(`${API}/standings`);
+    const data = await res.json();
+    state.standings = data;
+    renderStandings(data);
+    updateStats(data);
+  } catch(e) { console.error('fetchStandings', e); }
+}
+
+function renderStandings(data) {
+  const filtered = data.filter(p => p.matches_played > 0);
+  const body = document.getElementById('leaderboard-body');
+  if (!filtered.length) {
+    body.innerHTML = `<div class="empty-state"><div class="empty-icon">—</div><p>Importa un replay para ver la clasificación</p></div>`;
+    return;
+  }
+  const maxM = Math.max(...filtered.map(p => p.matches_played));
+  body.innerHTML = '';
+  filtered.forEach((p, i) => {
+    const rc = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const badge = p.is_pro
+      ? '<span class="badge badge-pro">PRO</span>'
+      : '<span class="badge badge-cas">CASUAL</span>';
+    const diff = maxM - p.matches_played;
+    const partBadge = diff > 0
+      ? `<span class="badge part-badge" title="${p.matches_played}/${maxM} partidas">${p.matches_played}/${maxM}</span>`
+      : '';
+    const init = (p.display_name || p.username)[0].toUpperCase();
+    const row = document.createElement('div');
+    row.className = 'lb-row';
+    row.innerHTML = `
+      <div class="rank-n ${rc}">${i + 1}</div>
+      <div class="player-cell">
+        <div class="p-avatar">${init}</div>
+        <div class="p-name">${esc(p.display_name || p.username)}${badge}${partBadge}</div>
+      </div>
+      <div class="cell-v right">${p.total_kills}</div>
+      <div class="cell-v right">${p.matches_played}</div>
+      <div class="cell-pts">${p.total_points}</div>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function updateStats(data) {
+  const kills = data.reduce((s, p) => s + p.total_kills, 0);
+  const maxM  = data.reduce((s, p) => Math.max(s, p.matches_played), 0);
+  document.getElementById('stat-kills').textContent    = kills;
+  document.getElementById('stat-matches').textContent  = maxM || '—';
+  document.getElementById('stat-players').textContent  = data.length;
+  if (data.length) document.getElementById('stat-leader').textContent = data[0].display_name || data[0].username;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PLAYERS
+═══════════════════════════════════════════════════════════════ */
+async function fetchPlayers() {
+  try {
+    const res = await fetch(`${API}/players`);
+    state.players = await res.json();
+    renderPlayerList();
+  } catch(e) { console.error('fetchPlayers', e); }
+}
+
+function renderPlayerList() {
+  const list = document.getElementById('player-list-container');
+  if (!state.players.length) {
+    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px;">Sin jugadores registrados.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  state.players.forEach(p => {
+    const badge = p.is_pro
+      ? '<span class="badge badge-pro">PRO</span>'
+      : '<span class="badge badge-cas">CASUAL</span>';
+    const item = document.createElement('div');
+    item.className = 'player-item';
+    item.innerHTML = `
+      <div>
+        <div class="player-item-name">${esc(p.display_name || p.username)} ${badge}</div>
+        <div class="player-item-tag">${esc(p.username)}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="togglePlayerPro(${p.id})">Pro</button>
+        <button class="btn btn-danger" style="padding:5px 10px;font-size:11px;" onclick="removePlayer(${p.id})">×</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+async function addPlayer() {
+  const username = document.getElementById('input-username').value.trim();
+  const display  = document.getElementById('input-display').value.trim();
+  const is_pro   = document.getElementById('input-is-pro').checked;
+  if (!username) { showToast('Ingresa un username', 'warning'); return; }
+  try {
+    const res = await fetch(`${API}/players`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username, display_name: display || null, is_pro })
+    });
+    if (res.ok) {
+      document.getElementById('input-username').value = '';
+      document.getElementById('input-display').value = '';
+      document.getElementById('input-is-pro').checked = false;
+      await fetchPlayers();
+      showToast(`Jugador ${username} agregado`, 'success');
+    } else if (res.status === 409) {
+      showToast('Jugador ya registrado', 'warning');
+    } else {
+      showToast('Error al agregar jugador', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+}
+
+async function removePlayer(id) {
+  if (!confirm('¿Eliminar este jugador y todos sus resultados?')) return;
+  try {
+    await fetch(`${API}/players/${id}`, { method: 'DELETE' });
+    await fetchPlayers();
+    showToast('Jugador eliminado', 'info');
+  } catch(e) { showToast('Error al eliminar', 'error'); }
+}
+
+async function togglePlayerPro(id) {
+  try {
+    const res = await fetch(`${API}/players/${id}/toggle-pro`, { method: 'PUT' });
+    if (res.ok) {
+      await fetchDashboard();
+      showToast('Categoría actualizada', 'success');
+    }
+  } catch(e) { showToast('Error al actualizar', 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MATCHES
+═══════════════════════════════════════════════════════════════ */
+async function fetchMatches() {
+  try {
+    const res = await fetch(`${API}/matches`);
+    state.matches = await res.json();
+    renderMatches();
+  } catch(e) { console.error('fetchMatches', e); }
+}
+
+function renderMatches() {
+  const el = document.getElementById('matches-container');
+  if (!state.matches.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Sin partidas registradas.</p>';
+    return;
+  }
+  el.innerHTML = '';
+  state.matches.slice().reverse().forEach(m => {
+    const d = m.ended_at
+      ? new Date(m.ended_at).toLocaleDateString('es', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+      : 'Activa';
+    const item = document.createElement('div');
+    item.className = 'match-item';
+    item.innerHTML = `
+      <div>
+        <div class="match-num">Partida #${m.match_number}</div>
+        <div class="match-date">${d}</div>
+      </div>
+      <div class="match-btns">
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="viewKillfeed(${m.id}, ${m.match_number})">Killfeed</button>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="openAdjustModal(${m.id}, ${m.match_number})">Ajustar</button>
+        <a href="../index.html" target="_blank" class="btn btn-ghost" style="padding:6px 12px;font-size:12px;">Tabla</a>
+        <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="removeMatch(${m.id})">Borrar</button>
+      </div>
+    `;
+    el.appendChild(item);
+  });
+}
+
+async function removeMatch(id) {
+  if (!confirm('¿Borrar esta partida y todos sus resultados? Esta acción no se puede deshacer.')) return;
+  try {
+    const res = await fetch(`${API}/matches/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast('Partida borrada', 'info');
+      await fetchDashboard();
+    } else {
+      showToast('Error al borrar', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AJUSTE DE KILLS
+═══════════════════════════════════════════════════════════════ */
+let currentAdjustMatchId = null;
+
+async function openAdjustModal(matchId, matchNumber) {
+  currentAdjustMatchId = matchId;
+  document.getElementById('adjust-title').textContent = `Ajuste — Partida #${matchNumber}`;
+  const tbody = document.getElementById('adjust-table-body');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);">Cargando...</td></tr>';
+  openModal('modal-adjust');
+  try {
+    const res = await fetch(`${API}/matches/${matchId}/results`);
+    const results = await res.json();
+    tbody.innerHTML = '';
+    results.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:700;">${esc(r.display_name || r.username)}<input type="hidden" class="adj-username" value="${esc(r.username)}" /></td>
+        <td style="text-align:center;">${r.kills}</td>
+        <td style="text-align:center;"><input type="number" class="form-input-sm adj-value" min="-99" max="99" value="${r.kill_adjustment || 0}" style="width:72px;" /></td>
+        <td style="text-align:center;"><input type="number" class="form-input-sm bonus-value" min="0" max="999" value="${r.bonus_points || 0}" style="width:72px;" /></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--danger);">Error al cargar resultados</td></tr>';
+  }
+}
+
+async function saveAdjust() {
+  if (!currentAdjustMatchId) return;
+  const rows = document.querySelectorAll('#adjust-table-body tr');
+  const btn = document.getElementById('btn-save-adjust');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  let saved = 0; let errors = 0;
+  for (const tr of rows) {
+    const username = tr.querySelector('.adj-username')?.value;
+    const adjust   = parseInt(tr.querySelector('.adj-value')?.value) || 0;
+    const bonus    = parseInt(tr.querySelector('.bonus-value')?.value) || 0;
+    if (!username) continue;
+    try {
+      const res1 = await fetch(`${API}/matches/${currentAdjustMatchId}/results/adjust`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, adjustment: adjust })
+      });
+      if (res1.ok) saved++;
+      const res2 = await fetch(`${API}/matches/${currentAdjustMatchId}/results/bonus`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, bonus })
+      });
+      if (res2.ok) saved++;
+    } catch(e) { errors++; }
+  }
+  btn.disabled = false; btn.textContent = 'Guardar Ajustes';
+  if (saved > 0) {
+    showToast(`Ajustes guardados (${saved} ok, ${errors} error(es))`, 'success');
+    closeModal('modal-adjust');
+    await fetchDashboard();
+    await fetchMatches();
+  } else {
+    showToast('No se pudo guardar', 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════════════════════ */
+async function fetchConfig() {
+  try {
+    const res = await fetch(`${API}/config`);
+    const cfg = await res.json();
+    document.getElementById('pro-bonus-select').value = cfg.pro_bonus_points || 0;
+  } catch(e) { console.error('fetchConfig', e); }
+}
+
+async function updateProBonus(bonus) {
+  try {
+    const res = await fetch(`${API}/config/pro-bonus`, {
+      method: 'PUT', headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ bonus: parseInt(bonus) })
+    });
+    if (res.ok) {
+      await fetchDashboard();
+      showToast(`Bonus PRO → +${bonus} (puntos recalculados)`, 'success');
+    }
+  } catch(e) { showToast('Error al actualizar bonus', 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KILLFEED
+═══════════════════════════════════════════════════════════════ */
+async function viewKillfeed(matchId, matchNumber) {
+  document.getElementById('killfeed-title').textContent = `Bajas — Partida #${matchNumber}`;
+  const tbody = document.getElementById('killfeed-table-body');
+  tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted);">Cargando...</td></tr>';
+  openModal('modal-killfeed');
+  try {
+    const res = await fetch(`${API}/matches/${matchId}/eliminations`);
+    const elims = await res.json();
+    if (!elims.length) {
+      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted);">Sin historial detallado.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    elims.forEach(e => {
+      const eliminator = e.eliminator
+        ? `<span style="font-weight:700;color:var(--cyan);">${esc(e.eliminator)}</span>`
+        : '<span style="color:var(--danger);">Tormenta/Caída</span>';
+      const eliminated = `<span style="font-weight:700;">${esc(e.eliminated)}</span>`;
+      const weapon = e.weapon ? esc(e.weapon) : 'Un arma';
+      const detail = e.display_text
+        ? esc(e.display_text)
+        : `${eliminator} <span style="color:var(--muted);font-size:12px;">(${weapon}) eliminó a</span> ${eliminated}`;
+      const dist = Number(e.distance);
+      const badges = [
+        e.is_npc_elimination ? 'NPC' : '',
+        e.is_self_elimination ? 'Auto' : '',
+        Number.isFinite(dist) && dist > 0 ? `${dist.toFixed(0)}m` : ''
+      ].filter(Boolean).map(t => `<span style="display:inline-block;margin-left:5px;padding:2px 5px;border-radius:4px;background:rgba(99,102,241,0.15);color:var(--cyan);font-size:10px;font-weight:700;">${t}</span>`).join('');
+      const time = esc(e.time || '--:--');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align:center;color:var(--muted);font-family:monospace;font-size:12px;">${time}</td>
+        <td>${detail}${badges}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--danger);">Error cargando historial</td></tr>';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PUNTUACIÓN
+═══════════════════════════════════════════════════════════════ */
+async function fetchScoring() {
+  try {
+    const res = await fetch(`${API}/scoring`);
+    const data = await res.json();
+    renderScoringTable('scoring-casual-body', data.casual_points, '#25b981');
+    renderScoringTable('scoring-pro-body', data.pro_points, '#6366f1');
+    document.getElementById('scoring-casual-kill-points').value = data.casual_kill_points ?? data.kill_points ?? 1;
+    document.getElementById('scoring-pro-kill-points').value = data.pro_kill_points ?? data.kill_points ?? 1;
+  } catch(e) {
+    showToast('Error al cargar puntuación', 'error');
+  }
+}
+
+function renderScoringTable(tbodyId, points, color) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+  const ranges = [
+    { label: '1', positions: [1] },
+    { label: '2', positions: [2] },
+    { label: '3', positions: [3] },
+    { label: '4', positions: [4] },
+    { label: '5', positions: [5] },
+    { label: '6', positions: [6] },
+    { label: '7', positions: [7] },
+    { label: '8', positions: [8] },
+    { label: '9', positions: [9] },
+    { label: '10', positions: [10] },
+    { label: '11', positions: [11] },
+    { label: '12', positions: [12] },
+    { label: '13', positions: [13] },
+    { label: '14', positions: [14] },
+    { label: '15', positions: [15] },
+    { label: '16–20', positions: [16,17,18,19,20] },
+    { label: '21–25', positions: [21,22,23,24,25] },
+  ];
+  ranges.forEach((r, idx) => {
+    const first = r.positions[0];
+    const val = points[String(first)] ?? points[first] ?? 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:${idx < 15 ? 700 : 600};color:${idx < 15 ? 'var(--text)' : 'var(--muted)'};">${r.label}</td>
+      <td style="text-align:center;"><input type="number" class="form-input-sm scoring-input" data-tbody="${tbodyId}" data-pos="${first}" min="0" max="99" value="${val}" style="width:64px;text-align:center;color:${color};border-color:${color}33;" /></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function saveScoring() {
+  const btn = document.getElementById('btn-save-scoring');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  const casualPoints = {};
+  const proPoints = {};
+
+  document.querySelectorAll('#scoring-casual-body .scoring-input').forEach(inp => {
+    casualPoints[inp.dataset.pos] = parseInt(inp.value) || 0;
+  });
+  document.querySelectorAll('#scoring-pro-body .scoring-input').forEach(inp => {
+    proPoints[inp.dataset.pos] = parseInt(inp.value) || 0;
+  });
+
+  // Fill ranges
+  const fillRange = (map, start, end, val) => {
+    for (let i = start; i <= end; i++) {
+      if (map[i] === undefined) map[i] = val;
+    }
+  };
+  fillRange(casualPoints, 1, 15, 0);
+  fillRange(casualPoints, 16, 20, casualPoints[16] || 3);
+  fillRange(casualPoints, 21, 25, casualPoints[21] || 2);
+  fillRange(proPoints, 1, 15, 0);
+  fillRange(proPoints, 16, 20, proPoints[16] || 2);
+  fillRange(proPoints, 21, 25, proPoints[21] || 1);
+
+  const casualKillPoints = parseInt(document.getElementById('scoring-casual-kill-points').value) || 1;
+  const proKillPoints = parseInt(document.getElementById('scoring-pro-kill-points').value) || 1;
+
+  try {
+    const res = await fetch(`${API}/scoring`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        casual_points: casualPoints,
+        pro_points: proPoints,
+        casual_kill_points: casualKillPoints,
+        pro_kill_points: proKillPoints
+      })
+    });
+    if (res.ok) {
+      showToast('Puntuación guardada — puntos recalculados', 'success');
+      await fetchScoring();
+      await fetchDashboard();
+    } else {
+      showToast('Error al guardar puntuación', 'error');
+    }
+  } catch(e) {
+    showToast('Error de conexión', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Guardar Puntuación';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REPLAY IMPORT
+═══════════════════════════════════════════════════════════════ */
+function handleReplayFile(input) {
+  if (input.files && input.files[0]) processReplayFile(input.files[0]);
+}
+
+function handleReplayDrop(event) {
+  const file = event.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.replay')) {
+    showToast('Solo se aceptan archivos .replay', 'warning'); return;
+  }
+  document.getElementById('selected-file-name').textContent = `${file.name}`;
+  processReplayFile(file);
+}
+
+function resetReplay() {
+  document.getElementById('replay-file-input').value = '';
+  document.getElementById('selected-file-name').textContent = '';
+  document.getElementById('replay-results-card').style.display = 'none';
+}
+
+async function processReplayFile(file) {
+  document.getElementById('selected-file-name').textContent = `${file.name}`;
+  const card = document.getElementById('replay-results-card');
+  card.style.display = 'block';
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  document.getElementById('replay-initial-msg').style.display  = 'none';
+  document.getElementById('replay-loading').style.display      = 'block';
+  document.getElementById('replay-results-container').style.display = 'none';
+  document.getElementById('btn-submit-replay').style.display   = 'none';
+  document.getElementById('replay-players-table').innerHTML    = '';
+  document.getElementById('replay-filename-display').textContent = file.name;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    const debug  = document.getElementById('replay-debug-toggle')?.checked;
+    const url    = `${API}/replay/upload${debug ? '?debug=true' : ''}`;
+    const res    = await fetch(url, { method: 'POST', body: formData });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      document.getElementById('replay-loading').style.display = 'none';
+      document.getElementById('replay-initial-msg').style.display = 'block';
+      document.getElementById('replay-initial-msg').innerHTML = `<div style="color:var(--danger);font-size:14px;">${err.detail || 'Error procesando el archivo.'}</div>`;
+      return;
+    }
+
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById('replay-loading').style.display = 'none';
+      document.getElementById('replay-initial-msg').style.display = 'block';
+      document.getElementById('replay-initial-msg').innerHTML = `<div style="color:var(--danger);font-size:14px;">${data.error}</div>`;
+      return;
+    }
+
+    window.currentReplayEliminations = data.eliminations || [];
+    document.getElementById('replay-loading').style.display = 'none';
+    document.getElementById('replay-results-container').style.display = 'block';
+    document.getElementById('btn-submit-replay').style.display = 'inline-flex';
+
+    if (data.debug_export) showToast(`Debug guardado: ${data.debug_export}`, 'info', 6000);
+
+    const tbody = document.getElementById('replay-players-table');
+    const allPlayers = new Set(data.possible_players || []);
+    if (data.placements) Object.keys(data.placements).forEach(p => allPlayers.add(p));
+    if (data.kills)      Object.keys(data.kills).forEach(p => allPlayers.add(p));
+
+    const sorted = Array.from(allPlayers).sort((a, b) => {
+      const pa = data.placements?.[a] ? parseInt(data.placements[a]) : 999;
+      const pb = data.placements?.[b] ? parseInt(data.placements[b]) : 999;
+      return pa !== pb ? pa - pb : a.localeCompare(b);
+    });
+
+    sorted.forEach(player => {
+      const kills = data.kills?.[player] ?? 0;
+      const pos   = data.placements?.[player] ?? '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:700;">${esc(player)}<input type="hidden" class="rp-username" value="${esc(player)}" /></td>
+        <td style="text-align:center;"><input type="number" class="form-input-sm rp-kills" min="0" value="${kills}" /></td>
+        <td style="text-align:center;"><input type="number" class="form-input-sm rp-adjust" min="-99" max="99" value="0" style="width:64px;" /></td>
+        <td style="text-align:center;"><input type="number" class="form-input-sm rp-pos" min="1" max="200" value="${pos}" /></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    showToast(`${sorted.length} jugadores cargados`, 'success');
+  } catch(e) {
+    document.getElementById('replay-loading').style.display = 'none';
+    document.getElementById('replay-initial-msg').style.display = 'block';
+    document.getElementById('replay-initial-msg').innerHTML = `<div style="color:var(--danger);">Error de conexión: ${esc(e.message)}</div>`;
+  }
+}
+
+async function submitReplayData() {
+  const rows = document.querySelectorAll('#replay-players-table tr');
+  const results = [];
+  rows.forEach(tr => {
+    const username = tr.querySelector('.rp-username')?.value;
+    const kills    = parseInt(tr.querySelector('.rp-kills')?.value) || 0;
+    const adjust   = parseInt(tr.querySelector('.rp-adjust')?.value) || 0;
+    const posStr   = tr.querySelector('.rp-pos')?.value;
+    const position = posStr ? parseInt(posStr) : null;
+    if (username && (kills > 0 || position !== null)) results.push({ username, kills, adjustment: adjust, position });
+  });
+  if (!results.length) { showToast('No hay datos para guardar', 'warning'); return; }
+
+  const btn = document.getElementById('btn-submit-replay');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+  try {
+    const payload = { results, eliminations: window.currentReplayEliminations || [] };
+    const res = await fetch(`${API}/replay/import-manual`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const d = await res.json();
+      showToast(`Partida #${d.match_number} guardada (${d.imported_kills} kills)`, 'success');
+      resetReplay();
+      await fetchDashboard();
+      showSection('dashboard', document.querySelector('[data-section="dashboard"]'));
+    } else {
+      showToast('Error al guardar', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Guardar Resultados'; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL HELPERS
+═══════════════════════════════════════════════════════════════ */
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════════ */
+function showToast(msg, type = 'info', duration = 3500) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTIL
+═══════════════════════════════════════════════════════════════ */
+function esc(v) {
+  return String(v ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+</body>
+</html>
