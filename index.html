@@ -648,6 +648,19 @@
       padding: 24px;
     }
 
+    /* ═══ ENHANCED UI ELEMENTS ══════════════════════════════════════════════ */
+    .player-cell { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.5); flex-shrink: 0; }
+    .badge { font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .badge.pro { background: rgba(255, 62, 138, 0.15); color: var(--pink); border: 1px solid rgba(255, 62, 138, 0.3); }
+    .badge.cas { background: rgba(49, 228, 127, 0.15); color: var(--green); border: 1px solid rgba(49, 228, 127, 0.3); }
+    .search-wrapper { display: flex; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; }
+    .search-input { background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 14px; outline: none; width: 200px; margin-left: 8px; }
+    .search-input::placeholder { color: var(--muted); }
+    .sortable { cursor: pointer; user-select: none; transition: color 0.2s; }
+    .sortable:hover { color: var(--text); }
+    .sort-icon { font-size: 10px; margin-left: 4px; opacity: 0.5; display: inline-block; width: 10px; }
+
     /* ═══ STANDINGS TABLE ═══════════════════════════════════════════════════ */
     .table-wrap {
       overflow-x: auto;
@@ -2506,6 +2519,10 @@
         <div class="section">
           <div class="section-head">
             <div class="section-title">Tabla General</div>
+            <div class="search-wrapper">
+              <span style="opacity: 0.5;">🔍</span>
+              <input type="search" class="search-input" id="search-global" placeholder="Buscar jugador..." oninput="handleSearch(this.value)">
+            </div>
           </div>
           <div class="table-wrap">
             <table class="tbl" id="global-table">
@@ -2513,9 +2530,9 @@
                 <tr>
                   <th>#</th>
                   <th>Jugador</th>
-                  <th class="c">Partidas</th>
-                  <th class="c">Kills</th>
-                  <th class="r">Puntos</th>
+                  <th class="c sortable" onclick="handleSort('matches_played')">Partidas <span class="sort-icon" id="sort-matches_played"></span></th>
+                  <th class="c sortable" onclick="handleSort('total_kills')">⚔️ Kills <span class="sort-icon" id="sort-total_kills"></span></th>
+                  <th class="r sortable" onclick="handleSort('total_points')">🏆 Puntos <span class="sort-icon" id="sort-total_points">▼</span></th>
                 </tr>
               </thead>
               <tbody id="standings-body">
@@ -2885,22 +2902,74 @@
     function rk(i) { return i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : ''; }
 
     /* ── Render global standings ──────────────────────────────── */
-    function renderGlobal(rows) {
+    function renderGlobal(newRows) {
+      if (newRows) globalStandingsData = newRows;
+      
       const body = document.getElementById('standings-body');
-      if (!rows || !rows.length) {
+      if (!globalStandingsData || !globalStandingsData.length) {
         body.innerHTML = `<tr><td class="empty-msg" colspan="5">Aún no hay resultados publicados.</td></tr>`;
         return;
       }
+
+      // Filter
+      let filtered = globalStandingsData;
+      if (currentSearch) {
+        filtered = filtered.filter(p => 
+          (p.display_name || p.username).toLowerCase().includes(currentSearch)
+        );
+      }
+
+      // Sort
+      filtered.sort((a, b) => {
+        let valA = Number(a[currentSort.col] || 0);
+        let valB = Number(b[currentSort.col] || 0);
+        if (currentSort.col === 'matches_played' || currentSort.col === 'total_kills' || currentSort.col === 'total_points') {
+          // keep them as numbers
+        } else {
+          valA = (a[currentSort.col] || '').toString().toLowerCase();
+          valB = (b[currentSort.col] || '').toString().toLowerCase();
+        }
+        
+        if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      // Update Sort Icons
+      document.querySelectorAll('.sort-icon').forEach(el => el.textContent = '');
+      const activeSortIcon = document.getElementById(`sort-${currentSort.col}`);
+      if (activeSortIcon) activeSortIcon.textContent = currentSort.dir === 'desc' ? '▼' : '▲';
+
       body.innerHTML = '';
-      rows.forEach((p, i) => {
+      if (filtered.length === 0) {
+         body.innerHTML = `<tr><td class="empty-msg" colspan="5">No se encontraron jugadores.</td></tr>`;
+      }
+      filtered.forEach((p, i) => {
+        // Original Rank
+        const origIndex = globalStandingsData.findIndex(x => x.username === p.username);
+        
         const tr = document.createElement('tr');
-        if (i === 0) tr.classList.add('is-leader');
+        if (origIndex === 0) tr.classList.add('is-leader');
+        
+        const name = p.display_name || p.username;
+        const initial = name.charAt(0).toUpperCase();
+        const color = getAvatarColor(name);
+        const badgeHTML = p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>';
+        
         tr.innerHTML = `
-          <td><div class="rk ${rk(i)}">${i + 1}</div></td>
-          <td>${esc(p.display_name || p.username)}</td>
+          <td><div class="rk ${rk(origIndex)}">${origIndex + 1}</div></td>
+          <td>
+            <div class="player-cell">
+              <div class="avatar" style="background:${color}">${initial}</div>
+              <div>
+                <span style="font-weight:700">${esc(name)}</span>
+                ${badgeHTML}
+              </div>
+            </div>
+          </td>
           <td class="c pts-m">${Number(p.matches_played || 0)}</td>
           <td class="c">${Number(p.total_kills || 0)}</td>
-          <td class="r pts-g ${rk(i)}">${Number(p.total_points || 0)}</td>`;
+          <td class="r pts-g ${rk(origIndex)}">${Number(p.total_points || 0)}</td>`;
         body.appendChild(tr);
       });
 
@@ -3000,6 +3069,35 @@
       } catch (err) {
         console.error(`Error loading match ${matchId} results:`, err);
       }
+    }
+
+    /* ── State & Filters ──────────────────────────────────────── */
+    let globalStandingsData = [];
+    let currentSort = { col: 'total_points', dir: 'desc' };
+    let currentSearch = '';
+    
+    function getAvatarColor(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const h = Math.abs(hash) % 360;
+      return `hsl(${h}, 70%, 50%)`;
+    }
+
+    function handleSearch(val) {
+      currentSearch = val.toLowerCase();
+      renderGlobal();
+    }
+
+    function handleSort(col) {
+      if (currentSort.col === col) {
+        currentSort.dir = currentSort.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        currentSort.col = col;
+        currentSort.dir = 'desc';
+      }
+      renderGlobal();
     }
 
     /* ── Load all data ────────────────────────────────────────── */
