@@ -2400,7 +2400,7 @@
             <div class="hero-info">
               <div class="info-item">
                 <span class="info-label">Modo</span>
-                <span class="info-value">Battle Royale Construcción</span>
+                <span class="info-value">Recarga Sin Construcción</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Región</span>
@@ -2574,7 +2574,8 @@
               <div class="challenge-item">
                 <div class="challenge-icon">2</div>
                 <div class="challenge-text"><strong>Masca La Hierba:</strong> Gana la partida sin eliminar a nadie —
-                  <strong style="color:var(--pink);">+10 pts</strong></div>
+                  <strong style="color:var(--pink);">+10 pts</strong>
+                </div>
               </div>
               <div class="challenge-item">
                 <div class="challenge-icon">3</div>
@@ -2621,8 +2622,8 @@
                   </table>
                 </div>
                 <div class="scoring-kill-row" id="scoring-casual-kill">
-                  <span style="font-size:15px;font-weight:700;color:var(--pink);">+</span> <strong>Puntos por eliminación:</strong> <span
-                    id="scoring-casual-kill-val"></span>
+                  <span style="font-size:15px;font-weight:700;color:var(--pink);">+</span> <strong>Puntos por
+                    eliminación:</strong> <span id="scoring-casual-kill-val"></span>
                 </div>
               </div>
               <div>
@@ -2639,8 +2640,8 @@
                   </table>
                 </div>
                 <div class="scoring-kill-row" id="scoring-pro-kill">
-                  <span style="font-size:15px;font-weight:700;color:var(--pink);">+</span> <strong>Puntos por eliminación:</strong> <span
-                    id="scoring-pro-kill-val"></span>
+                  <span style="font-size:15px;font-weight:700;color:var(--pink);">+</span> <strong>Puntos por
+                    eliminación:</strong> <span id="scoring-pro-kill-val"></span>
                 </div>
               </div>
             </div>
@@ -2665,8 +2666,8 @@
             <div class="rules-list">
               <div class="rule-item">
                 <div class="rule-icon">1</div>
-                <div class="rule-text"><strong>Formato:</strong> 3 partidas acumuladas en modo Battle Royale
-                  Construcción. Gana quien acumule más puntos al final de las 3 partidas.</div>
+                <div class="rule-text"><strong>Formato:</strong> 3 partidas acumuladas en modo Recarga Sin Construcción.
+                  Gana quien acumule más puntos al final de las 3 partidas.</div>
               </div>
               <div class="rule-item">
                 <div class="rule-icon">2</div>
@@ -2793,16 +2794,16 @@
         renderScoringTable('scoring-pro-body', data.pro_points, '#6366f1');
         document.getElementById('scoring-casual-kill-val').textContent = '+' + (data.casual_kill_points ?? 1) + ' pt por kill';
         document.getElementById('scoring-pro-kill-val').textContent = '+' + (data.pro_kill_points ?? 1) + ' pt por kill';
-      } catch(e) { console.error('fetchScoring', e); }
+      } catch (e) { console.error('fetchScoring', e); }
     }
 
     function renderScoringTable(tbodyId, points, color) {
       const tbody = document.getElementById(tbodyId);
       tbody.innerHTML = '';
       const ranges = [
-        '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15',
-        {label:'16–20', positions:[16,17,18,19,20]},
-        {label:'21–25', positions:[21,22,23,24,25]}
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15',
+        { label: '16–20', positions: [16, 17, 18, 19, 20] },
+        { label: '21–25', positions: [21, 22, 23, 24, 25] }
       ];
       ranges.forEach(r => {
         const label = typeof r === 'string' ? r : r.label;
