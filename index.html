@@ -661,6 +661,37 @@
     .sortable:hover { color: var(--text); }
     .sort-icon { font-size: 10px; margin-left: 4px; opacity: 0.5; display: inline-block; width: 10px; }
 
+    /* ═══ MODAL Y PERFIL ════════════════════════════════════════════════════ */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s; padding: 20px; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-content { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: var(--shadow); transform: translateY(20px); transition: transform 0.3s; padding: 24px; }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .modal-close:hover { background: rgba(255,255,255,0.2); }
+    
+    .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .profile-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.4); flex-shrink: 0; color: #fff;}
+    .profile-name { font-size: 24px; font-weight: 800; font-family: Rajdhani, sans-serif; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border2); border-radius: 8px; padding: 14px; text-align: center; }
+    .stat-val { font-size: 22px; font-weight: 800; color: var(--blue); font-family: Rajdhani, sans-serif; line-height: 1; }
+    .stat-lbl { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+    
+    .chart-container { display: flex; align-items: center; justify-content: space-around; margin-bottom: 24px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; border: 1px solid var(--border2); }
+    .doughnut { width: 110px; height: 110px; border-radius: 50%; position: relative; }
+    .doughnut::after { content: ''; position: absolute; inset: 22px; background: var(--panel); border-radius: 50%; }
+    
+    .chart-legend { display: flex; flex-direction: column; gap: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #fff; }
+    .legend-color { width: 14px; height: 14px; border-radius: 4px; }
+    
+    .feed-title { font-size: 16px; font-weight: 700; font-family: Rajdhani, sans-serif; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .feed-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 8px; }
+    .feed-item { background: rgba(255,255,255,0.03); border-radius: 6px; padding: 12px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; border-left: 3px solid var(--pink); gap: 12px; }
+    .feed-info { display: flex; flex-direction: column; gap: 4px; }
+    .feed-time { font-size: 11px; color: var(--muted); font-weight: 700; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; align-self: flex-start;}
+
     /* ═══ STANDINGS TABLE ═══════════════════════════════════════════════════ */
     .table-wrap {
       overflow-x: auto;
@@ -2829,6 +2860,16 @@
     </main>
   </div>
 
+  <!-- MODAL DE JUGADOR -->
+  <div class="modal-overlay" id="player-modal" onclick="closePlayerModal(event)">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closePlayerModal(event, true)">×</button>
+      <div id="modal-body-content">
+        <!-- Content injected via JS -->
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="./assets/js/config.js"></script>
   <script>
@@ -2950,6 +2991,8 @@
         
         const tr = document.createElement('tr');
         if (origIndex === 0) tr.classList.add('is-leader');
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => openPlayerModal(p.username);
         
         const name = p.display_name || p.username;
         const initial = name.charAt(0).toUpperCase();
@@ -3057,6 +3100,8 @@
         tbody.innerHTML = '';
         data.forEach((r, i) => {
           const tr = document.createElement('tr');
+          tr.style.cursor = 'pointer';
+          tr.onclick = () => openPlayerModal(r.username);
           tr.innerHTML = `
             <td><div class="rk ${rk(i)}">${i + 1}</div></td>
             <td>${esc(r.display_name || r.username)}</td>
@@ -3098,6 +3143,93 @@
         currentSort.dir = 'desc';
       }
       renderGlobal();
+    }
+
+    /* ── Modal Logic ──────────────────────────────────────────── */
+    async function openPlayerModal(username) {
+      const modal = document.getElementById('player-modal');
+      const body = document.getElementById('modal-body-content');
+      body.innerHTML = '<div class="empty-msg" style="padding:40px">Cargando perfil...</div>';
+      modal.classList.add('active');
+
+      try {
+        const res = await fetch(`${API_BASE}/players/${username}/details`);
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        
+        const p = data.player;
+        const s = data.summary;
+        const elims = data.eliminations;
+        
+        const initial = p.display_name.charAt(0).toUpperCase();
+        const color = getAvatarColor(p.display_name);
+        const badgeHTML = p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>';
+        
+        // Calculate chart percentages
+        const total = s.total_points || 1; // avoid division by zero
+        const pPlacement = (s.placement_points / total) * 100;
+        const pKills = (s.kill_points / total) * 100;
+        const pBonus = (s.bonus_points / total) * 100;
+        
+        let elimsHTML = '';
+        if (elims.length === 0) {
+          elimsHTML = '<div class="empty-msg" style="padding:20px; font-size:13px">Sin eliminaciones registradas.</div>';
+        } else {
+          elims.forEach(e => {
+            elimsHTML += `
+              <div class="feed-item">
+                <div class="feed-info">
+                  <strong>Eliminó a ${esc(e.eliminated)}</strong>
+                  <span style="font-size:12px; color:var(--muted)">Partida ${e.match_number} · Arma: ${esc(e.weapon || 'Desconocida')}</span>
+                </div>
+                <div class="feed-time">${e.time || '--:--'}</div>
+              </div>`;
+          });
+        }
+        
+        body.innerHTML = `
+          <div class="profile-header">
+            <div class="profile-avatar" style="background:${color}">${initial}</div>
+            <div>
+              <div class="profile-name">${esc(p.display_name)}</div>
+              <div style="margin-top:4px">${badgeHTML}</div>
+            </div>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-val">${s.total_points}</div>
+              <div class="stat-lbl">Pts Totales</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">${s.matches_played}</div>
+              <div class="stat-lbl">Partidas Jugadas</div>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <div class="doughnut" style="background: conic-gradient(var(--green) 0% ${pPlacement}%, var(--pink) ${pPlacement}% ${pPlacement + pKills}%, var(--gold) ${pPlacement + pKills}% 100%)"></div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-color" style="background:var(--green)"></div> Top (${s.placement_points} pts)</div>
+              <div class="legend-item"><div class="legend-color" style="background:var(--pink)"></div> Kills (${s.kill_points} pts)</div>
+              <div class="legend-item"><div class="legend-color" style="background:var(--gold)"></div> Bonus (${s.bonus_points} pts)</div>
+            </div>
+          </div>
+          
+          <div class="feed-title">⚔️ Historial de Eliminaciones</div>
+          <div class="feed-list">
+            ${elimsHTML}
+          </div>
+        `;
+      } catch (err) {
+        body.innerHTML = '<div class="empty-msg" style="padding:40px; color:#ff4d4d">Error al cargar el perfil.</div>';
+      }
+    }
+
+    function closePlayerModal(e, force = false) {
+      if (force || e.target.id === 'player-modal') {
+        document.getElementById('player-modal').classList.remove('active');
+      }
     }
 
     /* ── Load all data ────────────────────────────────────────── */
