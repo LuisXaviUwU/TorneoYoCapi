@@ -2999,11 +2999,14 @@
         const color = getAvatarColor(name);
         const badgeHTML = p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>';
         
+        // Avatar HTML (letter-based, will be replaced with skin icon asynchronously)
+        const avatarId = `av-${p.username.replace(/[^a-zA-Z0-9]/g,'_')}`;
+        
         tr.innerHTML = `
           <td><div class="rk ${rk(origIndex)}">${origIndex + 1}</div></td>
           <td>
             <div class="player-cell">
-              <div class="avatar" style="background:${color}">${initial}</div>
+              <div class="avatar" id="${avatarId}" style="background:${color}">${initial}</div>
               <div>
                 <span style="font-weight:700">${esc(name)}</span>
                 ${badgeHTML}
@@ -3014,6 +3017,20 @@
           <td class="c">${Number(p.total_kills || 0)}</td>
           <td class="r pts-g ${rk(origIndex)}">${Number(p.total_points || 0)}</td>`;
         body.appendChild(tr);
+        
+        // Load skin icon async without blocking render
+        if (p.skin_name) {
+          getSkinIconUrl(p.skin_name).then(url => {
+            if (url) {
+              const el = document.getElementById(avatarId);
+              if (el) {
+                el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML='${initial}'" />`;
+                el.style.background = 'transparent';
+                el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+              }
+            }
+          });
+        }
       });
 
       // Mini top 3 — podium cards
@@ -3120,6 +3137,21 @@
     let globalStandingsData = [];
     let currentSort = { col: 'total_points', dir: 'desc' };
     let currentSearch = '';
+    const skinIconCache = {}; // skin_name -> image URL or null
+    
+    async function getSkinIconUrl(skinName) {
+      if (!skinName) return null;
+      const key = skinName.toLowerCase();
+      if (key in skinIconCache) return skinIconCache[key];
+      try {
+        const res = await fetch(`https://fortnite-api.com/v2/cosmetics/br/search?name=${encodeURIComponent(skinName)}&matchMethod=contains&type=outfit`);
+        if (!res.ok) { skinIconCache[key] = null; return null; }
+        const data = await res.json();
+        const url = data?.data?.images?.smallIcon || data?.data?.images?.icon || null;
+        skinIconCache[key] = url;
+        return url;
+      } catch { skinIconCache[key] = null; return null; }
+    }
     
     function getAvatarColor(str) {
       let hash = 0;
@@ -3165,6 +3197,13 @@
         const color = getAvatarColor(p.display_name);
         const badgeHTML = p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>';
         
+        // Load skin icon if available
+        const skinUrl = p.skin_name ? await getSkinIconUrl(p.skin_name) : null;
+        const avatarStyle = skinUrl
+          ? `background: url('${skinUrl}') center/cover; box-shadow: 0 0 0 3px rgba(255,255,255,0.1);`
+          : `background:${color}`;
+        const avatarContent = skinUrl ? '' : initial;
+        
         // Calculate chart percentages
         const total = s.total_points || 1; // avoid division by zero
         const pPlacement = (s.placement_points / total) * 100;
@@ -3189,7 +3228,7 @@
         
         body.innerHTML = `
           <div class="profile-header">
-            <div class="profile-avatar" style="background:${color}">${initial}</div>
+            <div class="profile-avatar" style="${avatarStyle}">${avatarContent}</div>
             <div>
               <div class="profile-name">${esc(p.display_name)}</div>
               <div style="margin-top:4px">${badgeHTML}</div>
