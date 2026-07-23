@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Torneo Fortnite · yocapi_pr</title>
   <meta name="description"
-    content="Tabla de clasificación en vivo, recompensas y reglas del torneo de Fortnite organizado por yocapi_pr. Battle Royale Construcción · NA Central · Solitario." />
+    content="Tabla de clasificación en vivo, recompensas y reglas del torneo de Fortnite organizado por yocapi_pr. Recarga Sin Construcción · NA Central · Solitario." />
   <meta name="theme-color" content="#080c14" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -366,6 +366,31 @@
 
     .social-link:active {
       transform: translateY(0) scale(0.95);
+    }
+
+    /* colores por plataforma en hover */
+    .social-link[title="Twitch"]:hover {
+      border-color: #9146ff;
+      box-shadow: 0 6px 20px rgba(145, 70, 255, 0.35);
+      background: rgba(145, 70, 255, 0.08);
+    }
+
+    .social-link[title="TikTok"]:hover {
+      border-color: #ff0050;
+      box-shadow: 0 6px 20px rgba(255, 0, 80, 0.35);
+      background: rgba(255, 0, 80, 0.06);
+    }
+
+    .social-link[title="YouTube"]:hover {
+      border-color: #ff0000;
+      box-shadow: 0 6px 20px rgba(255, 0, 0, 0.35);
+      background: rgba(255, 0, 0, 0.06);
+    }
+
+    .social-link[title="Instagram"]:hover {
+      border-color: #e1306c;
+      box-shadow: 0 6px 20px rgba(225, 48, 108, 0.35);
+      background: rgba(225, 48, 108, 0.06);
     }
 
     .conn-status {
@@ -1077,6 +1102,35 @@
       font-weight: 600;
     }
 
+    /* ═══ CTA BUTTON ════════════════════════════════════════════════════════ */
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(37, 183, 255, 0.12), rgba(255, 62, 138, 0.08));
+      border: 1px solid rgba(37, 183, 255, 0.3);
+      color: var(--blue);
+      font-family: Inter, system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .cta-btn:hover {
+      background: linear-gradient(90deg, rgba(37, 183, 255, 0.22), rgba(255, 62, 138, 0.14));
+      border-color: rgba(37, 183, 255, 0.55);
+      box-shadow: 0 4px 18px rgba(37, 183, 255, 0.2);
+      transform: translateX(4px);
+    }
+
+    .cta-btn:active {
+      transform: translateX(2px) scale(0.97);
+    }
+
     /* ═══ REWARDS ═══════════════════════════════════════════════════════════ */
     .rewards-grid {
       display: grid;
@@ -1750,6 +1804,11 @@
         align-items: stretch;
         gap: 10px;
         padding: 20px 16px 24px;
+      }
+
+      /* #1 primero en móvil */
+      .podium-card.gold {
+        order: -1;
       }
 
       .podium-card {
@@ -2426,10 +2485,10 @@
           </div>
           <div class="podium" id="podium-top3"></div>
           <div style="padding: 14px 24px; border-top: 1px solid var(--border2);">
-            <span class="nav-item" style="display:inline-flex;width:auto;cursor:pointer;font-size:13px;"
+            <button class="cta-btn"
               onclick="showSection('clasificacion', document.querySelector('[data-section=clasificacion]'))">
               Ver tabla completa →
-            </span>
+            </button>
           </div>
         </div>
       </section>
