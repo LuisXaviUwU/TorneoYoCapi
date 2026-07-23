@@ -104,6 +104,7 @@ def build_standings(db: Session) -> list:
             "username": row.username,
             "display_name": row.display_name,
             "is_pro": bool(row.is_pro),
+            "skin_name": row.skin_name if hasattr(row, 'skin_name') else None,
             "total_points": int(row.total_points),
             "total_kills": int(row.total_kills),
             "total_placement_pts": int(row.total_placement_pts),

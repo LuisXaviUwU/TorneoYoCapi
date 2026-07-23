@@ -46,6 +46,7 @@ class PlayerCreate(BaseModel):
     username: str
     display_name: Optional[str] = None
     is_pro: bool = False
+    skin_name: Optional[str] = None
 
 
 class TournamentNamePayload(BaseModel):
@@ -62,7 +63,7 @@ class ProBonusPayload(BaseModel):
 def list_players(db=Depends(get_db)):
     players = get_all_players(db)
     return [
-        {"id": p.id, "username": p.username, "display_name": p.display_name or p.username, "is_pro": p.is_pro}
+        {"id": p.id, "username": p.username, "display_name": p.display_name or p.username, "is_pro": p.is_pro, "skin_name": p.skin_name}
         for p in players
     ]
 
@@ -73,7 +74,10 @@ def add_player(body: PlayerCreate, db=Depends(get_db)):
     if existing:
         raise HTTPException(status_code=409, detail="Jugador ya registrado")
     player = create_player(db, body.username, body.display_name, body.is_pro)
-    return {"id": player.id, "username": player.username, "display_name": player.display_name, "is_pro": player.is_pro}
+    if body.skin_name:
+        player.skin_name = body.skin_name.strip()
+        db.commit()
+    return {"id": player.id, "username": player.username, "display_name": player.display_name, "is_pro": player.is_pro, "skin_name": player.skin_name}
 
 
 @app.delete("/api/players/{player_id}")
@@ -98,6 +102,21 @@ def toggle_player_pro(player_id: int, db=Depends(get_db)):
     recalculate_all_matches(db)
     
     return {"id": player.id, "is_pro": player.is_pro}
+
+
+class SkinUpdatePayload(BaseModel):
+    skin_name: Optional[str] = None
+
+
+@app.patch("/api/players/{player_id}/skin")
+def update_player_skin(player_id: int, body: SkinUpdatePayload, db=Depends(get_db)):
+    from .database import Player
+    player = db.query(Player).filter(Player.id == player_id).first()
+    if not player:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+    player.skin_name = body.skin_name.strip() if body.skin_name else None
+    db.commit()
+    return {"id": player.id, "skin_name": player.skin_name}
 
 
 # ─── Standings API ────────────────────────────────────────────────────────────
@@ -281,7 +300,8 @@ def get_player_details(username: str, db=Depends(get_db)):
         "player": {
             "username": player.username,
             "display_name": player.display_name or player.username,
-            "is_pro": player.is_pro
+            "is_pro": player.is_pro,
+            "skin_name": player.skin_name
         },
         "summary": {
             "total_points": total_points,

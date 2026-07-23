@@ -38,6 +38,7 @@ class Player(Base):
     display_name = Column(String, nullable=True)
     is_pro = Column(Boolean, default=False)
     role = Column(String, nullable=True)  # Ej: 'Organizadora', 'Coordinador'
+    skin_name = Column(String, nullable=True)  # Nombre de la skin de Fortnite para el avatar
     registered_at = Column(DateTime, default=datetime.utcnow)
 
     eliminations_made = relationship(
@@ -130,6 +131,7 @@ def init_db():
         ("eliminations", "raw_event_json", "TEXT"),
         ("match_results", "kill_adjustment", "INTEGER DEFAULT 0"),
         ("match_results", "bonus_points", "INTEGER DEFAULT 0"),
+        ("players", "skin_name", "TEXT"),
     ]
     with engine.connect() as conn:
         for table, column, definition in migrations:
@@ -382,6 +384,7 @@ def get_tournament_standings(db: Session):
             p.username,
             COALESCE(p.display_name, p.username) AS display_name,
             p.is_pro,
+            p.skin_name,
             COALESCE(SUM(mr.total_points), 0) AS total_points,
             COALESCE(SUM(mr.kills), 0) AS total_kills,
             COALESCE(SUM(mr.placement_points), 0) AS total_placement_pts,
