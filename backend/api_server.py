@@ -242,6 +242,54 @@ def get_match_eliminations(match_id: int, db=Depends(get_db)):
     return result
 
 
+@app.get("/api/players/{username}/details")
+def get_player_details(username: str, db=Depends(get_db)):
+    from .database import get_player_by_username, MatchResult, Elimination, Match
+    
+    player = get_player_by_username(db, username)
+    if not player:
+        raise HTTPException(404, "Jugador no encontrado")
+        
+    results = db.query(MatchResult).filter(MatchResult.player_id == player.id).all()
+    
+    # Kills
+    elims = db.query(Elimination).join(Match).filter(
+        Elimination.eliminator_username == player.username,
+        Elimination.raw_text != "[REPLAY_IMPORT]"
+    ).order_by(Match.match_number.desc(), Elimination.id.desc()).all()
+    
+    total_points = sum(r.total_points for r in results)
+    placement_points = sum(r.placement_points for r in results)
+    kill_points = sum(r.kill_points for r in results)
+    bonus_points = sum((r.bonus_points or 0) for r in results)
+    
+    eliminations_list = []
+    for e in elims:
+        eliminations_list.append({
+            "match_number": e.match.match_number,
+            "eliminated": e.eliminated_username,
+            "weapon": e.weapon,
+            "display_text": e.display_text,
+            "time": e.match_time
+        })
+        
+    return {
+        "player": {
+            "username": player.username,
+            "display_name": player.display_name or player.username,
+            "is_pro": player.is_pro
+        },
+        "summary": {
+            "total_points": total_points,
+            "placement_points": placement_points,
+            "kill_points": kill_points,
+            "bonus_points": bonus_points,
+            "matches_played": len(results)
+        },
+        "eliminations": eliminations_list
+    }
+
+
 # ─── Config API ───────────────────────────────────────────────────────────────
 
 @app.get("/api/config")
