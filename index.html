@@ -2977,7 +2977,7 @@
       const podium = document.getElementById('podium-top3');
       if (podium) {
         podium.innerHTML = '';
-        const top3 = (rows || []).slice(0, 3);
+        const top3 = (globalStandingsData || []).slice(0, 3);
         if (!top3.length) {
           podium.innerHTML = '<div class="empty-msg" style="padding:30px">Sin resultados aún.</div>';
         } else {

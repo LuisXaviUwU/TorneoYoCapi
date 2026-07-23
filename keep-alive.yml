@@ -1,0 +1,14 @@
+name: Keep Alive Ping
+
+on:
+  schedule:
+    # Ejecuta este script cada 5 minutos
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render API
+        run: curl -s https://torneoyocapi.onrender.com/api/standings > /dev/null
