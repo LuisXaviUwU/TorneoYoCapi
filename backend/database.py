@@ -56,6 +56,7 @@ class Match(Base):
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
+    is_published = Column(Boolean, default=False)
 
     eliminations = relationship("Elimination", back_populates="match")
     results = relationship("MatchResult", back_populates="match")
@@ -132,6 +133,7 @@ def init_db():
         ("match_results", "kill_adjustment", "INTEGER DEFAULT 0"),
         ("match_results", "bonus_points", "INTEGER DEFAULT 0"),
         ("players", "skin_name", "TEXT"),
+        ("matches", "is_published", "BOOLEAN DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, column, definition in migrations:
@@ -391,6 +393,7 @@ def get_tournament_standings(db: Session):
             COUNT(mr.id) AS matches_played
         FROM players p
         INNER JOIN match_results mr ON mr.player_id = p.id
+        INNER JOIN matches m ON mr.match_id = m.id AND m.is_published = 1
         GROUP BY p.id
         HAVING COUNT(mr.id) > 0
         ORDER BY total_points DESC, total_kills DESC

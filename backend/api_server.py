@@ -138,6 +138,7 @@ def list_matches(db=Depends(get_db)):
             "id": m.id,
             "match_number": m.match_number,
             "is_active": m.is_active,
+            "is_published": m.is_published,
             "started_at": m.started_at.isoformat() if m.started_at else None,
             "ended_at": m.ended_at.isoformat() if m.ended_at else None,
         }
@@ -166,6 +167,22 @@ def get_match_results_api(match_id: int, db=Depends(get_db)):
             "total_points": row.total_points,
         })
     return results
+
+
+class PublishPayload(BaseModel):
+    is_published: bool
+
+@app.patch("/api/matches/{match_id}/publish")
+def update_match_publish_status(match_id: int, payload: PublishPayload, db=Depends(get_db)):
+    from .database import Match
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+    
+    match.is_published = payload.is_published
+    db.commit()
+    db.refresh(match)
+    return {"ok": True, "is_published": match.is_published}
 
 
 class AdjustmentPayload(BaseModel):
