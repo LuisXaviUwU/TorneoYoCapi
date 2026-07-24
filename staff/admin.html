@@ -1149,14 +1149,23 @@ function renderMatches() {
     const d = m.ended_at
       ? new Date(m.ended_at).toLocaleDateString('es', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
       : 'Activa';
+    
+    const publishLabel = m.is_published ? 'Publicada' : 'Borrador (Oculta)';
+    const publishColor = m.is_published ? 'color: var(--green);' : 'color: var(--gold);';
+    const toggleBtnText = m.is_published ? 'Ocultar' : 'Publicar';
+
     const item = document.createElement('div');
     item.className = 'match-item';
     item.innerHTML = `
       <div>
-        <div class="match-num">Partida #${m.match_number}</div>
+        <div class="match-num" style="display:flex;align-items:center;gap:8px;">
+          Partida #${m.match_number}
+          <span style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,0.05);${publishColor}">${publishLabel}</span>
+        </div>
         <div class="match-date">${d}</div>
       </div>
       <div class="match-btns">
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="togglePublishMatch(${m.id}, ${!m.is_published})">${toggleBtnText}</button>
         <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="viewKillfeed(${m.id}, ${m.match_number})">Killfeed</button>
         <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="openAdjustModal(${m.id}, ${m.match_number})">Ajustar</button>
         <a href="../index.html" target="_blank" class="btn btn-ghost" style="padding:6px 12px;font-size:12px;">Tabla</a>
@@ -1165,6 +1174,25 @@ function renderMatches() {
     `;
     el.appendChild(item);
   });
+}
+
+async function togglePublishMatch(matchId, isPublished) {
+  try {
+    const res = await fetch(`${API}/matches/${matchId}/publish`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_published: isPublished })
+    });
+    if (res.ok) {
+      showToast(isPublished ? 'Partida publicada' : 'Partida oculta', 'success');
+      await fetchMatches();
+      await fetchDashboard();
+    } else {
+      showToast('Error al actualizar', 'error');
+    }
+  } catch(e) {
+    showToast('Error de conexión', 'error');
+  }
 }
 
 async function removeMatch(id) {
