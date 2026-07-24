@@ -3141,17 +3141,41 @@
     
     async function getSkinIconUrl(skinName) {
       if (!skinName) return null;
-      const key = skinName.toLowerCase();
+      const key = skinName.toLowerCase().trim();
       if (key in skinIconCache) return skinIconCache[key];
+      
+      const extractUrl = (data) => data?.data?.images?.smallIcon || data?.data?.images?.icon || null;
+      
       try {
-        const res = await fetch(`https://fortnite-api.com/v2/cosmetics/br/search?name=${encodeURIComponent(skinName)}&matchMethod=contains&type=outfit`);
-        if (!res.ok) { skinIconCache[key] = null; return null; }
-        const data = await res.json();
-        const url = data?.data?.images?.smallIcon || data?.data?.images?.icon || null;
+        // If it starts with CID_, use direct ID lookup
+        if (key.startsWith('cid_')) {
+          const res = await fetch(`https://fortnite-api.com/v2/cosmetics/br/${encodeURIComponent(skinName.trim())}`);
+          if (res.ok) {
+            const data = await res.json();
+            const url = extractUrl(data);
+            skinIconCache[key] = url;
+            return url;
+          }
+        }
+        
+        // Try exact name match first
+        const resExact = await fetch(`https://fortnite-api.com/v2/cosmetics/br/search?name=${encodeURIComponent(skinName.trim())}&matchMethod=full&type=outfit`);
+        if (resExact.ok) {
+          const data = await resExact.json();
+          const url = extractUrl(data);
+          if (url) { skinIconCache[key] = url; return url; }
+        }
+        
+        // Fallback: contains match (less precise)
+        const resContains = await fetch(`https://fortnite-api.com/v2/cosmetics/br/search?name=${encodeURIComponent(skinName.trim())}&matchMethod=contains&type=outfit`);
+        if (!resContains.ok) { skinIconCache[key] = null; return null; }
+        const dataContains = await resContains.json();
+        const url = extractUrl(dataContains);
         skinIconCache[key] = url;
         return url;
       } catch { skinIconCache[key] = null; return null; }
     }
+
     
     function getAvatarColor(str) {
       let hash = 0;
