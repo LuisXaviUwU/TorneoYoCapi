@@ -3073,12 +3073,13 @@
     /* ── Render per-match tables ──────────────────────────────── */
     function renderMatches(matches) {
       const list = document.getElementById('matches-list');
-      if (!matches || !matches.length) {
+      const publishedMatches = matches ? matches.filter(m => m.is_published) : [];
+      if (!publishedMatches.length) {
         list.innerHTML = `<div class="empty-msg">No hay partidas registradas aún.</div>`;
         return;
       }
       list.innerHTML = '';
-      matches.forEach(m => {
+      publishedMatches.forEach(m => {
         const card = document.createElement('div');
         card.className = 'match-card';
         card.innerHTML = `
