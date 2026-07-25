@@ -393,7 +393,7 @@ def get_tournament_standings(db: Session):
             COUNT(mr.id) AS matches_played
         FROM players p
         INNER JOIN match_results mr ON mr.player_id = p.id
-        INNER JOIN matches m ON mr.match_id = m.id AND m.is_published = 1
+        INNER JOIN matches m ON mr.match_id = m.id AND m.is_published = true
         GROUP BY p.id
         HAVING COUNT(mr.id) > 0
         ORDER BY total_points DESC, total_kills DESC
