@@ -1074,7 +1074,7 @@ function renderPlayerList() {
       
     let roleOptions = '';
     if (p.username.toLowerCase() === 'yocapi_pr') {
-      roleOptions = `<span style="font-size:11px;color:var(--gold);font-weight:700;margin-left:10px;">👑 Organizadora</span>`;
+      roleOptions = `<span style="display:inline-flex;align-items:center;font-size:12px;color:var(--gold);font-weight:700;margin-left:10px;background:rgba(245,158,11,0.1);padding:4px 8px;border-radius:6px;border:1px solid rgba(245,158,11,0.3);text-transform:uppercase;letter-spacing:0.5px;">Organizadora</span>`;
     } else {
       const isCoord = p.role === 'Coordinador del torneo';
       roleOptions = `
