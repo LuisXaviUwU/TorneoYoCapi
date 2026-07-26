@@ -3127,7 +3127,12 @@
           return;
         }
         tbody.innerHTML = '';
-        data.forEach((r, i) => {
+        const activeData = data.filter(r => !r.is_disqualified);
+        if (!activeData.length) {
+          tbody.innerHTML = `<tr><td class="empty-msg" colspan="6">Sin resultados.</td></tr>`;
+          return;
+        }
+        activeData.forEach((r, i) => {
           const tr = document.createElement('tr');
           tr.style.cursor = 'pointer';
           tr.onclick = () => openPlayerModal(r.username);
