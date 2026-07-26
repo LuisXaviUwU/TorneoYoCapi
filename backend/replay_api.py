@@ -78,8 +78,10 @@ async def upload_replay(file: UploadFile = File(...), debug: bool = False, db=De
         tmp_path = tmp.name
 
     try:
-        known_players = [p.username for p in get_all_players(db)]
-        result = parse_replay(tmp_path, known_players, debug=debug)
+        # No pasamos known_players: el replay ya sabe exactamente qué jugadores
+        # participaron. Pasarlos causaba que aparecieran jugadores de partidas
+        # anteriores en la nueva lista.
+        result = parse_replay(tmp_path, known_players=None, debug=debug)
         result["filename"] = file.filename
         return result
     finally:

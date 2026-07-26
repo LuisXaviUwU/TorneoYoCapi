@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from .config import config, save_config
 from .database import (
     SessionLocal, init_db, get_db,
-    get_all_players, get_player_by_username, create_player, delete_player,
+    get_all_players, get_player_by_username, create_player, delete_player, disqualify_player,
     get_all_matches, delete_match, MatchResult,
     upsert_match_result
 )
@@ -69,7 +69,8 @@ def list_players(db=Depends(get_db)):
             "display_name": p.display_name or p.username,
             "is_pro": p.is_pro,
             "skin_name": p.skin_name,
-            "role": p.role
+            "role": p.role,
+            "is_disqualified": bool(p.is_disqualified)
         }
         for p in players
     ]
@@ -93,6 +94,17 @@ def remove_player(player_id: int, db=Depends(get_db)):
     if not ok:
         raise HTTPException(status_code=404, detail="Jugador no encontrado")
     return {"ok": True}
+
+
+class DisqualifyPayload(BaseModel):
+    disqualified: bool
+
+@app.patch("/api/players/{player_id}/disqualify")
+def toggle_disqualify(player_id: int, body: DisqualifyPayload, db=Depends(get_db)):
+    player = disqualify_player(db, player_id, body.disqualified)
+    if not player:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+    return {"id": player.id, "is_disqualified": player.is_disqualified}
 
 
 @app.put("/api/players/{player_id}/toggle-pro")
@@ -177,6 +189,7 @@ def get_match_results_api(match_id: int, db=Depends(get_db)):
             "username": row.username,
             "display_name": row.display_name,
             "is_pro": bool(row.is_pro),
+            "is_disqualified": bool(getattr(row, 'is_disqualified', False)),
             "position": row.position,
             "kills": row.kills,
             "kill_adjustment": row.kill_adjustment or 0,

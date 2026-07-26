@@ -39,6 +39,7 @@ class Player(Base):
     is_pro = Column(Boolean, default=False)
     role = Column(String, nullable=True)  # Ej: 'Organizadora', 'Coordinador'
     skin_name = Column(String, nullable=True)  # Nombre de la skin de Fortnite para el avatar
+    is_disqualified = Column(Boolean, default=False, nullable=False)
     registered_at = Column(DateTime, default=datetime.utcnow)
 
     eliminations_made = relationship(
@@ -195,6 +196,16 @@ def set_player_role(db: Session, player_id: int, role: Optional[str]) -> Optiona
     return player
 
 
+def disqualify_player(db: Session, player_id: int, disqualified: bool) -> Optional[Player]:
+    """Descalifica o reinstate a un jugador. No borra sus datos."""
+    player = db.query(Player).filter(Player.id == player_id).first()
+    if player:
+        player.is_disqualified = disqualified
+        db.commit()
+        db.refresh(player)
+    return player
+
+
 # ─── Match helpers ─────────────────────────────────────────────────────────
 
 def get_active_match(db: Session) -> Optional[Match]:
@@ -226,10 +237,27 @@ def end_match(db: Session, match_id: int) -> Optional[Match]:
 def delete_match(db: Session, match_id: int) -> bool:
     match = db.query(Match).filter(Match.id == match_id).first()
     if match:
-        # Delete related eliminations and results manually if not cascade
+        # 1. Get the player IDs that participated in this match BEFORE deleting
+        player_ids_in_match = [
+            r.player_id
+            for r in db.query(MatchResult).filter(MatchResult.match_id == match_id).all()
+        ]
+
+        # 2. Delete related eliminations and results
         db.query(Elimination).filter(Elimination.match_id == match_id).delete()
         db.query(MatchResult).filter(MatchResult.match_id == match_id).delete()
         db.delete(match)
+        db.flush()  # Flush so subsequent queries reflect the deletions
+
+        # 3. Delete orphan players: those who participated in this match but have
+        #    NO match_results in any other match, and have no special role.
+        for pid in player_ids_in_match:
+            remaining_results = db.query(MatchResult).filter(MatchResult.player_id == pid).count()
+            if remaining_results == 0:
+                orphan = db.query(Player).filter(Player.id == pid).first()
+                if orphan and not orphan.role:
+                    db.delete(orphan)
+
         db.commit()
         return True
     return False
@@ -360,6 +388,7 @@ def get_match_results(db: Session, match_id: int):
             p.username,
             COALESCE(p.display_name, p.username) AS display_name,
             p.is_pro,
+            p.is_disqualified,
             mr.position,
             mr.kills,
             mr.kill_adjustment,
@@ -395,6 +424,7 @@ def get_tournament_standings(db: Session):
         FROM players p
         INNER JOIN match_results mr ON mr.player_id = p.id
         INNER JOIN matches m ON mr.match_id = m.id AND m.is_published = true
+        WHERE COALESCE(p.is_disqualified, false) = false
         GROUP BY p.id
         HAVING COUNT(mr.id) > 0
         ORDER BY total_points DESC, total_kills DESC
