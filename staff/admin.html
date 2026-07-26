@@ -1071,6 +1071,7 @@ function renderPlayerList() {
     const badge = p.is_pro
       ? '<span class="badge badge-pro">PRO</span>'
       : '<span class="badge badge-cas">CASUAL</span>';
+    const isDisq = !!p.is_disqualified;
       
     let roleOptions = '';
     if (p.username.toLowerCase() === 'yocapi_pr') {
@@ -1085,18 +1086,25 @@ function renderPlayerList() {
       `;
     }
 
+    const disqBadge = isDisq ? `<span style="font-size:10px;font-weight:700;color:#ef4444;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);padding:2px 6px;border-radius:4px;margin-left:8px;text-transform:uppercase;letter-spacing:0.5px;">Descalificado</span>` : '';
+    const disqBtn = isDisq
+      ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;color:var(--green);border-color:var(--green);" onclick="toggleDisqualify(${p.id}, false)">Reinstatar</button>`
+      : `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;color:#f87171;border-color:rgba(239,68,68,0.4);" onclick="toggleDisqualify(${p.id}, true)">Descalificar</button>`;
+
     const item = document.createElement('div');
     item.className = 'player-item';
+    if (isDisq) item.style.opacity = '0.6';
     item.innerHTML = `
       <div>
         <div class="player-item-name" style="display:flex;align-items:center;">
-          ${esc(p.display_name || p.username)} ${badge} ${roleOptions}
+          ${esc(p.display_name || p.username)} ${badge} ${roleOptions} ${disqBadge}
         </div>
         <div class="player-item-tag">${esc(p.username)} ${p.skin_name ? `<span style="color:var(--green);font-size:11px;">· 🎮 ${esc(p.skin_name)}</span>` : ''}</div>
       </div>
       <div style="display:flex;gap:6px;">
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="editSkin(${p.id}, '${esc(p.skin_name || '')}')">🎮</button>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="editSkin(${p.id}, '${esc(p.skin_name || '')}')">Skin</button>
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="togglePlayerPro(${p.id})">Pro</button>
+        ${disqBtn}
         <button class="btn btn-danger" style="padding:5px 10px;font-size:11px;" onclick="removePlayer(${p.id})">×</button>
       </div>
     `;
@@ -1120,6 +1128,25 @@ async function updatePlayerRole(id, roleVal) {
   } catch(e) { showToast('Error de conexión', 'error'); }
 }
 
+
+
+async function toggleDisqualify(id, disqualified) {
+  const action = disqualified ? 'descalificar' : 'reinstatar';
+  if (!confirm(`¿Seguro que deseas ${action} a este jugador? ${disqualified ? 'Se ocultará de todas las tablas.' : 'Volverá a aparecer en las tablas.'}`)) return;
+  try {
+    const res = await fetch(`${API}/players/${id}/disqualify`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ disqualified })
+    });
+    if (res.ok) {
+      await fetchPlayers();
+      showToast(disqualified ? 'Jugador descalificado' : 'Jugador reinstalado', disqualified ? 'error' : 'success');
+    } else {
+      showToast('Error al actualizar', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+}
 
 
 async function editSkin(playerId, currentSkin) {
