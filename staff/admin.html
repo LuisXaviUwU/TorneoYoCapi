@@ -503,9 +503,9 @@
     <div class="login-title">Panel Admin</div>
     <p class="login-sub">Torneo Fortnite · yocapi_pr — Acceso restringido</p>
 
-    <div class="form-group">
+    <div class="form-group" style="display:none;">
       <label class="form-label" for="login-email">Correo</label>
-      <input class="form-input" type="email" id="login-email" placeholder="torneocapifortnite@gmail.com"
+      <input class="form-input" type="email" id="login-email" placeholder="torneocapifortnite@gmail.com" value="torneocapifortnite@gmail.com"
              onkeydown="if(event.key==='Enter')doLogin()" autocomplete="username" />
     </div>
     <div class="form-group">
@@ -926,14 +926,13 @@ const ADMIN_PASS  = '260726';
 const SESSION_KEY = 'ycap_admin_session';
 
 function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
   const btn   = document.getElementById('login-btn');
   const err   = document.getElementById('login-error');
 
   err.classList.remove('show');
 
-  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+  if (pass === ADMIN_PASS) {
     sessionStorage.setItem(SESSION_KEY, '1');
     btn.disabled = true;
     btn.textContent = 'Accediendo...';
@@ -1072,11 +1071,27 @@ function renderPlayerList() {
     const badge = p.is_pro
       ? '<span class="badge badge-pro">PRO</span>'
       : '<span class="badge badge-cas">CASUAL</span>';
+      
+    let roleOptions = '';
+    if (p.username.toLowerCase() === 'yocapi_pr') {
+      roleOptions = `<span style="font-size:11px;color:var(--gold);font-weight:700;margin-left:10px;">👑 Organizadora</span>`;
+    } else {
+      const isCoord = p.role === 'Coordinador del torneo';
+      roleOptions = `
+        <select class="form-input-sm" style="width:130px;margin-left:10px;font-size:11px;padding:2px 4px;" onchange="updatePlayerRole(${p.id}, this.value)">
+          <option value="" ${!p.role ? 'selected' : ''}>Sin rol</option>
+          <option value="Coordinador del torneo" ${isCoord ? 'selected' : ''}>Coordinador</option>
+        </select>
+      `;
+    }
+
     const item = document.createElement('div');
     item.className = 'player-item';
     item.innerHTML = `
       <div>
-        <div class="player-item-name">${esc(p.display_name || p.username)} ${badge}</div>
+        <div class="player-item-name" style="display:flex;align-items:center;">
+          ${esc(p.display_name || p.username)} ${badge} ${roleOptions}
+        </div>
         <div class="player-item-tag">${esc(p.username)} ${p.skin_name ? `<span style="color:var(--green);font-size:11px;">· 🎮 ${esc(p.skin_name)}</span>` : ''}</div>
       </div>
       <div style="display:flex;gap:6px;">
@@ -1087,6 +1102,22 @@ function renderPlayerList() {
     `;
     list.appendChild(item);
   });
+}
+
+async function updatePlayerRole(id, roleVal) {
+  try {
+    const res = await fetch(`${API}/players/${id}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: roleVal || null })
+    });
+    if (res.ok) {
+      await fetchPlayers();
+      showToast('Rol actualizado', 'success');
+    } else {
+      showToast('Error al actualizar rol', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
 }
 
 
