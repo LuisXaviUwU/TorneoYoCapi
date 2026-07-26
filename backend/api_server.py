@@ -63,7 +63,14 @@ class ProBonusPayload(BaseModel):
 def list_players(db=Depends(get_db)):
     players = get_all_players(db)
     return [
-        {"id": p.id, "username": p.username, "display_name": p.display_name or p.username, "is_pro": p.is_pro, "skin_name": p.skin_name}
+        {
+            "id": p.id,
+            "username": p.username,
+            "display_name": p.display_name or p.username,
+            "is_pro": p.is_pro,
+            "skin_name": p.skin_name,
+            "role": p.role
+        }
         for p in players
     ]
 
@@ -117,6 +124,18 @@ def update_player_skin(player_id: int, body: SkinUpdatePayload, db=Depends(get_d
     player.skin_name = body.skin_name.strip() if body.skin_name else None
     db.commit()
     return {"id": player.id, "skin_name": player.skin_name}
+
+
+class RoleUpdatePayload(BaseModel):
+    role: Optional[str] = None
+
+@app.patch("/api/players/{player_id}/role")
+def update_player_role(player_id: int, body: RoleUpdatePayload, db=Depends(get_db)):
+    from .database import set_player_role
+    player = set_player_role(db, player_id, body.role)
+    if not player:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+    return {"id": player.id, "role": player.role}
 
 
 # ─── Standings API ────────────────────────────────────────────────────────────

@@ -387,6 +387,7 @@ def get_tournament_standings(db: Session):
             COALESCE(p.display_name, p.username) AS display_name,
             p.is_pro,
             p.skin_name,
+            p.role,
             COALESCE(SUM(mr.total_points), 0) AS total_points,
             COALESCE(SUM(mr.kills), 0) AS total_kills,
             COALESCE(SUM(mr.placement_points), 0) AS total_placement_pts,
