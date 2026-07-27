@@ -3000,7 +3000,9 @@
     /* ── Rank helper ──────────────────────────────────────────── */
     function rk(i) { return i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : ''; }
 
-    /* ── Render global standings ──────────────────────────────── */
+    /* ── Render global standings ── */
+    let hideNames = false;
+
     function renderGlobal(newRows) {
       if (newRows) globalStandingsData = newRows;
       
@@ -3052,16 +3054,19 @@
         tr.style.cursor = 'pointer';
         tr.onclick = () => openPlayerModal(p.username);
         
-        const name = p.display_name || p.username;
+        const rawName = p.display_name || p.username;
+        const name = hideNames ? "Jugador Misterioso" : rawName;
         const initial = name.charAt(0).toUpperCase();
         const color = getAvatarColor(name);
-        const badgeHTML = p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>';
+        const badgeHTML = hideNames ? '' : (p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>');
         
         let roleBadgeHTML = '';
-        if (p.role === 'Organizadora del torneo') {
-          roleBadgeHTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--gold);background:rgba(245,158,11,0.1);padding:4px 8px;border-radius:6px;margin-left:8px;border:1px solid rgba(245,158,11,0.3);text-transform:uppercase;letter-spacing:0.5px;">Organizadora</span>`;
-        } else if (p.role === 'Coordinador del torneo') {
-          roleBadgeHTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--blue);background:rgba(37,183,255,0.1);padding:4px 8px;border-radius:6px;margin-left:8px;border:1px solid rgba(37,183,255,0.3);text-transform:uppercase;letter-spacing:0.5px;">Coordinador</span>`;
+        if (!hideNames) {
+          if (p.role === 'Organizadora del torneo') {
+            roleBadgeHTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--gold);background:rgba(245,158,11,0.1);padding:4px 8px;border-radius:6px;margin-left:8px;border:1px solid rgba(245,158,11,0.3);text-transform:uppercase;letter-spacing:0.5px;">Organizadora</span>`;
+          } else if (p.role === 'Coordinador del torneo') {
+            roleBadgeHTML = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--blue);background:rgba(37,183,255,0.1);padding:4px 8px;border-radius:6px;margin-left:8px;border:1px solid rgba(37,183,255,0.3);text-transform:uppercase;letter-spacing:0.5px;">Coordinador</span>`;
+          }
         }
         
         // Avatar HTML (letter-based, will be replaced with skin icon asynchronously)
@@ -3084,8 +3089,8 @@
           <td class="r pts-g ${rk(origIndex)}">${Number(p.total_points || 0)}</td>`;
         body.appendChild(tr);
         
-        // Load skin icon async without blocking render
-        if (p.skin_name) {
+        // If player has a skin, async load the avatar image
+        if (!hideNames && p.skin_name) {
           getSkinIconUrl(p.skin_name).then(url => {
             if (url) {
               const el = document.getElementById(avatarId);
@@ -3375,13 +3380,17 @@
       const dot = document.getElementById('conn-dot');
       const txt = document.getElementById('conn-text');
       try {
-        const [sRes, mRes] = await Promise.all([
+        const [sRes, mRes, setRes] = await Promise.all([
           fetch(`${API_BASE}/standings`),
-          fetch(`${API_BASE}/matches`)
+          fetch(`${API_BASE}/matches`),
+          fetch(`${API_BASE}/settings`)
         ]);
         if (!sRes.ok) throw new Error('API error');
         const standings = await sRes.json();
         const matches = await mRes.json();
+        const settings = await setRes.json();
+        
+        hideNames = settings.hide_names;
         
         const banner = document.getElementById('pending-results-banner');
         if (banner) {
@@ -3389,8 +3398,8 @@
           banner.style.display = hasUnpublished ? 'flex' : 'none';
         }
 
-        const sStr = JSON.stringify(standings);
-        const mStr = JSON.stringify(matches);
+        const sStr = JSON.stringify(standings) + hideNames;
+        const mStr = JSON.stringify(matches) + hideNames;
 
         if (sStr !== lastStandingsHash) {
           renderGlobal(standings || []);
