@@ -109,6 +109,14 @@ class MatchResult(Base):
     player = relationship("Player")
 
 
+class TournamentSettings(Base):
+    __tablename__ = "tournament_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, nullable=False, index=True)
+    value = Column(String, nullable=True)
+
+
 # ─────────────────────────── HELPERS ───────────────────────────────────────
 
 def get_db() -> Session:
@@ -430,3 +438,23 @@ def get_tournament_standings(db: Session):
         ORDER BY total_points DESC, total_kills DESC
     """)).fetchall()
     return rows
+
+
+# ─── Settings Helpers ────────────────────────────────────────────────────────
+
+def get_setting(db: Session, key: str, default: str = None) -> Optional[str]:
+    setting = db.query(TournamentSettings).filter(TournamentSettings.key == key).first()
+    if setting:
+        return setting.value
+    return default
+
+def set_setting(db: Session, key: str, value: str):
+    setting = db.query(TournamentSettings).filter(TournamentSettings.key == key).first()
+    if setting:
+        setting.value = value
+    else:
+        setting = TournamentSettings(key=key, value=value)
+        db.add(setting)
+    db.commit()
+    return setting
+

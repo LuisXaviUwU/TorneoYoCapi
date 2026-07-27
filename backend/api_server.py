@@ -19,6 +19,7 @@ from .database import (
     upsert_match_result
 )
 from .scoring_engine import build_standings, recalculate_all_matches
+from .database import get_setting, set_setting
 from . import replay_api
 
 # ─── Inicialización ──────────────────────────────────────────────────────────
@@ -159,6 +160,26 @@ def head_standings():
 @app.get("/api/standings")
 def get_standings(db=Depends(get_db)):
     return build_standings(db)
+
+
+# ─── Settings API ─────────────────────────────────────────────────────────────
+
+@app.get("/api/settings")
+def get_settings_api(db=Depends(get_db)):
+    hide_names = get_setting(db, "hide_names", "false") == "true"
+    return {"hide_names": hide_names}
+
+
+class SettingsUpdate(BaseModel):
+    hide_names: bool
+
+
+@app.patch("/api/settings")
+def update_settings_api(payload: SettingsUpdate, db=Depends(get_db)):
+    val = "true" if payload.hide_names else "false"
+    set_setting(db, "hide_names", val)
+    return {"ok": True, "hide_names": payload.hide_names}
+
 
 
 @app.get("/api/matches")
