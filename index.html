@@ -3196,9 +3196,11 @@
           const tr = document.createElement('tr');
           tr.style.cursor = 'pointer';
           tr.onclick = () => openPlayerModal(r.username);
+          const rawName = r.display_name || r.username;
+          const name = hideNames ? "Jugador Misterioso" : rawName;
           tr.innerHTML = `
             <td><div class="rk ${rk(i)}">${i + 1}</div></td>
-            <td>${esc(r.display_name || r.username)}</td>
+            <td>${esc(name)}</td>
             <td class="c">${r.position}°</td>
             <td class="c">${r.kills}</td>
             <td class="c pts-m">${r.placement_points}</td>
