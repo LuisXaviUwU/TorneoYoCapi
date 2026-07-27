@@ -3121,7 +3121,7 @@
             card.className = `podium-card ${cls[i] || ''}`;
             card.innerHTML = `
               <div class="podium-rank">#${rankLabel}</div>
-              <div class="podium-name">${esc(p.display_name || p.username)}</div>
+              <div class="podium-name">${hideNames ? "???" : esc(p.display_name || p.username)}</div>
               <div class="podium-stats">
                 <div class="podium-stat">
                   <div class="podium-stat-val">${Number(p.total_kills || 0)}</div>
