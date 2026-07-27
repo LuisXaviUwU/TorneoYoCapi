@@ -3294,12 +3294,14 @@
         const s = data.summary;
         const elims = data.eliminations;
         
-        const initial = p.display_name.charAt(0).toUpperCase();
-        const color = getAvatarColor(p.display_name);
-        const badgeHTML = p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>';
+        const rawName = p.display_name || p.username;
+        const name = hideNames ? "Jugador Misterioso" : rawName;
+        const initial = name.charAt(0).toUpperCase();
+        const color = getAvatarColor(name);
+        const badgeHTML = hideNames ? '' : (p.is_pro ? '<span class="badge pro">PRO</span>' : '<span class="badge cas">CASUAL</span>');
         
         // Load skin icon if available
-        const skinUrl = p.skin_name ? await getSkinIconUrl(p.skin_name) : null;
+        const skinUrl = (!hideNames && p.skin_name) ? await getSkinIconUrl(p.skin_name) : null;
         const avatarStyle = skinUrl
           ? `background: url('${skinUrl}') center/cover; box-shadow: 0 0 0 3px rgba(255,255,255,0.1);`
           : `background:${color}`;
@@ -3316,10 +3318,11 @@
           elimsHTML = '<div class="empty-msg" style="padding:20px; font-size:13px">Sin eliminaciones registradas.</div>';
         } else {
           elims.forEach(e => {
+            const victim = hideNames ? "Jugador Misterioso" : e.eliminated;
             elimsHTML += `
               <div class="feed-item">
                 <div class="feed-info">
-                  <strong>Eliminó a ${esc(e.eliminated)}</strong>
+                  <strong>Eliminó a ${esc(victim)}</strong>
                   <span style="font-size:12px; color:var(--muted)">Partida ${e.match_number} · Arma: ${esc(e.weapon || 'Desconocida')}</span>
                 </div>
                 <div class="feed-time">${e.time || '--:--'}</div>
@@ -3331,7 +3334,7 @@
           <div class="profile-header">
             <div class="profile-avatar" style="${avatarStyle}">${avatarContent}</div>
             <div>
-              <div class="profile-name">${esc(p.display_name)}</div>
+              <div class="profile-name">${esc(name)}</div>
               <div style="margin-top:4px">${badgeHTML}</div>
             </div>
           </div>
