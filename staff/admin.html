@@ -828,6 +828,22 @@
 
       <div class="card">
         <div class="card-head">
+          <span class="card-title" style="color: var(--pink);"><i class="fas fa-eye-slash"></i> Factor Sorpresa (Ocultar Nombres)</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+            Activa esta opción para ocultar todos los nombres y skins de los jugadores en la vista pública (reemplazados por "Jugador Misterioso"). Ideal para crear suspenso antes de revelar resultados oficiales.
+          </p>
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+            <input type="checkbox" id="toggle-hide-names" onchange="updateHideNames(this.checked)" style="width:20px; height:20px;">
+            <span style="font-weight:600;">Ocultar nombres al público</span>
+          </label>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <div class="card-head">
           <span class="card-title">Información del Torneo</span>
         </div>
         <div class="card-body">
@@ -948,7 +964,7 @@ function activateApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').classList.add('visible');
   fetchDashboard();
-  fetchConfig();
+  loadConfigValues();
   setInterval(fetchDashboard, 15000);
 }
 
@@ -1336,12 +1352,24 @@ async function saveAdjust() {
 /* ═══════════════════════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════════════════════ */
-async function fetchConfig() {
+async function loadConfigValues() {
   try {
-    const res = await fetch(`${API}/config`);
-    const cfg = await res.json();
-    document.getElementById('pro-bonus-select').value = cfg.pro_bonus_points || 0;
-  } catch(e) { console.error('fetchConfig', e); }
+    // Cargar bonus PRO
+    const resBonus = await fetch(`${API}/config/pro-bonus`);
+    if (resBonus.ok) {
+      const data = await resBonus.json();
+      document.getElementById('pro-bonus-select').value = data.pro_bonus || 0;
+    }
+    
+    // Cargar Factor Sorpresa
+    const resSettings = await fetch(`${API}/settings`);
+    if (resSettings.ok) {
+      const data = await resSettings.json();
+      document.getElementById('toggle-hide-names').checked = data.hide_names;
+    }
+  } catch(e) {
+    console.error("Error al cargar configuraciones:", e);
+  }
 }
 
 async function updateProBonus(bonus) {
@@ -1355,6 +1383,20 @@ async function updateProBonus(bonus) {
       showToast(`Bonus PRO → +${bonus} (puntos recalculados)`, 'success');
     }
   } catch(e) { showToast('Error al actualizar bonus', 'error'); }
+}
+
+async function updateHideNames(isHidden) {
+  try {
+    const res = await fetch(`${API}/settings`, {
+      method: 'PATCH', headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ hide_names: isHidden })
+    });
+    if (res.ok) {
+      showToast(`Nombres ${isHidden ? 'ocultos' : 'visibles'} en la vista pública`, 'success');
+    }
+  } catch(e) {
+    showToast('Error al actualizar Factor Sorpresa', 'error');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
